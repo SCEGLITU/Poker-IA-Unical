@@ -19,12 +19,12 @@ public class MyGdxGame extends ApplicationAdapter {
 	// ********** END GLOBAL VARIABLES *************
 
 	SpriteBatch batch;
-	Card cards;
+	Deck cards;
 
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		cards = new Card();
+		cards = new Deck();
 		cards.setCardPosition(1,Suite.CLUBS,WORLD_WIDTH/2,WORLD_HEIGHT/2);
 		}
 
@@ -38,7 +38,9 @@ public class MyGdxGame extends ApplicationAdapter {
 	}
 	
 	@Override
-	public void dispose () {
+	public void dispose ()
+	{
+		cards.dispose();
 		batch.dispose();
 	}
 }

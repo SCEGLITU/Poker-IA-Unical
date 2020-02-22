@@ -20,12 +20,18 @@ enum Suite{
     DIAMONDS, HEARTS, SPADES, CLUBS;
 }
 
-public class Card {
+public class Deck {
 
     private ArrayList<Sprite> carte;
 
+    public void dispose()
+    {
+        for(Sprite c:carte)
+            c.getTexture().dispose();
+        carte.clear();
+    }
 
-    public Card() {
+    public Deck() {
         carte = new ArrayList<>();
         carte.add(new Sprite(new Texture(Gdx.files.internal("cards/ace_of_diamonds.png"))));
         for(int i=2;i<11;i++)
