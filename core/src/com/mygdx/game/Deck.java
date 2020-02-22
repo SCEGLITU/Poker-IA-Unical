@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
  */
 enum Suite{
-    DIAMONDS, HEARTS, SPADES, CLUBS;
+    DIAMONDS, HEARTS, SPADES, CLUBS, DARK;
 }
 
 public class Deck {
@@ -60,6 +60,7 @@ public class Deck {
         carte.add(new Sprite(new Texture("cards/"+"jack_of_clubs.png")));
         carte.add(new Sprite(new Texture("cards/"+"queen_of_clubs.png")));
         carte.add(new Sprite(new Texture("cards/"+"king_of_clubs.png")));
+        carte.add(new Sprite(new Texture("cards/"+"dark_card.png")));
 
         for (Sprite i:carte){
             i.setSize(MyGdxGame.CARD_WIDTH,MyGdxGame.CARD_HEIGHT);
@@ -79,10 +80,13 @@ public class Deck {
         else if(suite == Suite.CLUBS){
             return carte.get(39+(card-1));
         }
+        else if(suite == Suite.DARK)
+            return carte.get(carte.size()-1);
+
         Sprite sprit=null;
         return sprit;
     }
-    public Sprite setCardPosition(int card, Suite suite,int x,int y){
+    public void setCardPosition(int card, Suite suite,int x,int y){
         if (suite == Suite.DIAMONDS){
             carte.get((card-1)).setPosition(x,y);
         }
@@ -95,7 +99,6 @@ public class Deck {
         else if(suite == Suite.CLUBS){
             carte.get(39+(card-1)).setPosition(x,y);
         }
-        Sprite sprit=null;
-        return sprit;
+        carte.get((carte.size()-1)).setPosition(x,y);
     }
 }
