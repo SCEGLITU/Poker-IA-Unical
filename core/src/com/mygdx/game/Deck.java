@@ -67,6 +67,10 @@ public class Deck {
         }
     }
 
+    public Sprite getCard(Card card)
+    {
+        return getCard(card.getNumber(), card.getSuite());
+    }
     public Sprite getCard(int card, Suite suite){
         if (suite == Suite.DIAMONDS){
             return carte.get((card-1));

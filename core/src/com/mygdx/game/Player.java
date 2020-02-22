@@ -39,6 +39,21 @@ public class Player {
         cards.add(c);
     }
 
+    public void removeCard(int i)
+    {
+        cards.remove(i);
+    }
+
+    public void removeCard(Card card)
+    {
+        cards.remove(card);
+    }
+
+    public void reset()
+    {
+        cards.clear();
+    }
+
     public String getName() {
         return name;
     }
