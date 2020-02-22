@@ -71,6 +71,7 @@ public class Deck {
     {
         return getCard(card.getNumber(), card.getSuite());
     }
+
     public Sprite getCard(int card, Suite suite){
         if (suite == Suite.DIAMONDS){
             return carte.get((card-1));

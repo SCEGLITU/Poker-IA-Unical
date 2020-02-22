@@ -10,7 +10,6 @@ import java.util.ArrayList;
         2 ----->SPADES -    [26-38]
 
         3 -----> CLUBS -    [39-51]
-
 */
 
 public class Dealer {
@@ -18,7 +17,7 @@ public class Dealer {
     private int index;
 
     public Dealer() {
-        index = -1;
+        index = 0;
         valuecards = new ArrayList<>();
         for(int i=1;i<14;i++)
             valuecards.add(new Card(Suite.DIAMONDS,i));
@@ -28,10 +27,16 @@ public class Dealer {
             valuecards.add(new Card(Suite.SPADES,i));
         for(int i=1;i<14;i++)
             valuecards.add(new Card(Suite.CLUBS,i));
+        Shuffler.shuffle(valuecards);
     }
 
     public Card getCard(){
-        index= (index+1)%valuecards.size();
+        //index= (index+1)%valuecards.size();
+        index++;
+        if(index == valuecards.size()) {
+            Shuffler.shuffle(valuecards);
+            index = 0;
+        }
         return valuecards.get(index);
     }
 }

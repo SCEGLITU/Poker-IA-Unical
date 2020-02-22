@@ -1,5 +1,8 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+
 import java.util.ArrayList;
 
 public class Player {
@@ -9,12 +12,17 @@ public class Player {
     protected boolean fold;
 
     public Player() {
+        this.name = "SONY";
+        this.money = 5000;
+        this.fold = false;
+        this.cards = new ArrayList<Card>();
     }
 
-    public Player(String name, int money, boolean fold) {
+    public Player(String name, int money) {
         this.name = name;
         this.money = money;
-        this.fold = fold;
+        this.fold = false;
+        this.cards = new ArrayList<Card>();
     }
 
     public void check()
@@ -42,6 +50,11 @@ public class Player {
     public void removeCard(int i)
     {
         cards.remove(i);
+    }
+
+    public Card getCard(int i)
+    {
+        return cards.get(i);
     }
 
     public void removeCard(Card card)
@@ -84,5 +97,11 @@ public class Player {
 
     public void setFold(boolean fold) {
         this.fold = fold;
+    }
+
+    public void draw(Batch batch,PlayerDirection direction){
+        if(direction == PlayerDirection.DOWN){
+
+        }
     }
 }
