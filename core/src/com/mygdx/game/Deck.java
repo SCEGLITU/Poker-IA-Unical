@@ -67,6 +67,21 @@ public class Deck {
         }
     }
 
+    public Sprite getAsDarkCard(Card card)
+    {
+        Sprite sp = getCard(card);
+        Sprite dark = getDarkCard();
+        dark.setOrigin(sp.getOriginX(),sp.getOriginY());
+        dark.setRotation(sp.getRotation());
+        dark.setPosition(sp.getX(),sp.getY());
+        return dark;
+    }
+
+    public Sprite getDarkCard()
+    {
+        return carte.get(carte.size()-1);
+    }
+
     public Sprite getCard(Card card)
     {
         return getCard(card.getNumber(), card.getSuite());
