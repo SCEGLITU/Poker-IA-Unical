@@ -27,15 +27,18 @@ public class Dealer {
             valuecards.add(new Card(Suite.SPADES,i));
         for(int i=1;i<14;i++)
             valuecards.add(new Card(Suite.CLUBS,i));
+    }
+
+    public void shuffle()
+    {
+        index = 0;
         Shuffler.shuffle(valuecards);
     }
 
     public Card getCard(){
-        //index= (index+1)%valuecards.size();
         index++;
         if(index == valuecards.size()) {
-            Shuffler.shuffle(valuecards);
-            index = 0;
+            throw new RuntimeException("Il mazzo e' finito");
         }
         return valuecards.get(index);
     }
