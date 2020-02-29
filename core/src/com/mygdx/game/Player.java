@@ -1,7 +1,6 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 
 import java.util.ArrayList;
 
@@ -100,8 +99,7 @@ public class Player {
     }
 
     public void draw(Batch batch,PlayerDirection direction){
-        if(direction == PlayerDirection.DOWN){
 
-        }
     }
+
 }

@@ -1,6 +1,8 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 
 import java.util.ArrayList;
 
@@ -10,10 +12,15 @@ enum PlayerDirection{
 
 public class Game {
 
+    private Sprite plus;
+    private Sprite min;
+    private Sprite check;
+    private Sprite raise;
+    private Sprite fold;
+    private int gameShift;
     static final protected int CPU_UP = 0;
     static final protected int CPU_LEFT = 1;
     static final protected int CPU_RIGHT = 2;
-
     static public Dealer dealer;
     private Player player;
     private ArrayList<Player> cpu;
@@ -23,7 +30,18 @@ public class Game {
         player = new Player();
         dealer = new Dealer();
         cpu = new ArrayList<>();
+        gameShift = 1;
         deck = new Deck();
+        plus = new Sprite(new Texture("game/Plus.png"));
+        min = new Sprite(new Texture("game/Min.png"));
+        check = new Sprite(new Texture("game/Check.png"));
+        fold = new Sprite(new Texture("game/Fold.png"));
+        raise = new Sprite(new Texture("game/Raise.png"));
+        plus.setPosition(150,MyGdxGame.WORLD_HEIGHT/2-30);
+        min.setPosition(280,MyGdxGame.WORLD_HEIGHT/2-30);
+        check.setPosition(400,MyGdxGame.WORLD_HEIGHT/2-30);
+        fold.setPosition(550,MyGdxGame.WORLD_HEIGHT/2-30);
+        raise.setPosition(700,MyGdxGame.WORLD_HEIGHT/2-30);
         for(int i=0;i<3;i++)
             cpu.add(new Player());
     }
@@ -97,6 +115,14 @@ public class Game {
             deck.getCard(player.getCard(i)).draw(batch);
         }
 
+        if(gameShift ==1){
+            plus.draw(batch);
+            check.draw(batch);
+            fold.draw(batch);
+            min.draw(batch);
+            raise.draw(batch);
+        }
+
         for (int i = 0; i < 3; i++) {
             float angle = 0f;
             switch (i)
@@ -122,4 +148,6 @@ public class Game {
     public void dispose(){
         deck.dispose();
     }
+
+
 }
