@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -17,7 +19,9 @@ public class Game {
     private Sprite check;
     private Sprite raise;
     private Sprite fold;
+    private Sprite cursor;
     private int gameShift;
+    private  int round= 1;
     static final protected int CPU_UP = 0;
     static final protected int CPU_LEFT = 1;
     static final protected int CPU_RIGHT = 2;
@@ -33,15 +37,23 @@ public class Game {
         gameShift = 1;
         deck = new Deck();
         plus = new Sprite(new Texture("game/Plus.png"));
+        cursor = new Sprite(new Texture("game/cursor.png"));
         min = new Sprite(new Texture("game/Min.png"));
         check = new Sprite(new Texture("game/Check.png"));
         fold = new Sprite(new Texture("game/Fold.png"));
         raise = new Sprite(new Texture("game/Raise.png"));
-        plus.setPosition(150,MyGdxGame.WORLD_HEIGHT/2-30);
-        min.setPosition(280,MyGdxGame.WORLD_HEIGHT/2-30);
-        check.setPosition(400,MyGdxGame.WORLD_HEIGHT/2-30);
-        fold.setPosition(550,MyGdxGame.WORLD_HEIGHT/2-30);
-        raise.setPosition(700,MyGdxGame.WORLD_HEIGHT/2-30);
+        cursor.setSize(70,70);
+        plus.setSize(70,50);
+        min.setSize(70,50);
+        check.setSize(150,80);
+        fold.setSize(150,80);
+        raise.setSize(150,80);
+        cursor.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-60);
+        plus.setPosition(150,MyGdxGame.WORLD_HEIGHT/2-20);
+        min.setPosition(300,MyGdxGame.WORLD_HEIGHT/2-30);
+        check.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
+        fold.setPosition(600,MyGdxGame.WORLD_HEIGHT/2-30);
+        raise.setPosition(750,MyGdxGame.WORLD_HEIGHT/2-30);
         for(int i=0;i<3;i++)
             cpu.add(new Player());
     }
@@ -110,18 +122,26 @@ public class Game {
         }
     }
 
+    public void drawButtonToSelect(Batch batch){
+        if(gameShift ==1 && (round==1 ||round==3)){
+            check.draw(batch);
+            fold.draw(batch);
+            min.draw(batch);
+            raise.draw(batch);
+            plus.draw(batch);
+            cursor.draw(batch);
+        }
+        else if(gameShift ==1 && round==2){
+            cursor.draw(batch);
+        }
+    }
+
     public void draw(Batch batch){
         for(int i=0;i<5;i++){
             deck.getCard(player.getCard(i)).draw(batch);
         }
 
-        if(gameShift ==1){
-            plus.draw(batch);
-            check.draw(batch);
-            fold.draw(batch);
-            min.draw(batch);
-            raise.draw(batch);
-        }
+        drawButtonToSelect(batch);
 
         for (int i = 0; i < 3; i++) {
             float angle = 0f;
@@ -142,6 +162,34 @@ public class Game {
                 deck.getCard(card).setRotation(angle);
                 deck.getAsDarkCard(card).draw(batch);
             }
+        }
+        keyboard();
+    }
+
+    //if you are on the first turn or on the 3rd, move the cursor between the buttons
+    // otherwise move it between the cards to choose which to discard
+    // PS: remember to create a new button to confirm the end of cards discard
+    public void keyboard(){
+        if(round==1 && gameShift==1){
+            if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) && cursor.getX()!=raise.getX()){
+                cursor.setX(cursor.getX()+150);
+            }
+            if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT) && cursor.getX()!=plus.getX()){
+                cursor.setX(cursor.getX()-150);
+            }
+        }
+        else if(round==2 && gameShift ==1){
+            if(cursor.getY()!=0){
+                cursor.setX(deck.getCard(player.getCard(0)).getX());
+                cursor.setY(0);
+            }
+            if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) && cursor.getX()!=deck.getCard(player.getCard(4)).getX()){
+                cursor.setX(cursor.getX()+(MyGdxGame.CARD_WIDTH+30));
+            }
+            if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT) && cursor.getX()!=deck.getCard(player.getCard(0)).getX()){
+                cursor.setX(cursor.getX()-(MyGdxGame.CARD_WIDTH+30));
+            }
+
         }
     }
 
