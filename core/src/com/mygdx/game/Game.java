@@ -59,6 +59,7 @@ public class Game {
     }
 
     public void setAllCardForAllPlayer(){
+        dealer.shuffle();
         for(int i=0;i<5;i++){
             player.addCard(dealer.getCard());}
         for(int i=0;i<3;i++)
@@ -66,7 +67,7 @@ public class Game {
                 cpu.get(i).addCard(dealer.getCard());
     }
 
-    public void changeCardforPlayer(int cpuindex,ArrayList<Integer> cardposition){
+    public void changeCardforPlayer(int cpuindex, ArrayList<Integer> cardposition){
         if(cpuindex == 0) {
             for (int i = 0; i < cardposition.size(); i++) {
                 player.removeCard(cardposition.get(i));
