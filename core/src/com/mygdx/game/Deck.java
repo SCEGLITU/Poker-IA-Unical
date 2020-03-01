@@ -31,7 +31,16 @@ public class Deck {
         carte.clear();
     }
 
-    public Deck() {
+    protected static Deck deck = null;
+
+    public static Deck getIstance()
+    {
+        if(deck == null)
+            deck = new Deck();
+        return deck;
+    }
+
+    private Deck() {
         carte = new ArrayList<>();
         carte.add(new Sprite(new Texture(Gdx.files.internal("cards/ace_of_diamonds.png"))));
         for(int i=2;i<11;i++)

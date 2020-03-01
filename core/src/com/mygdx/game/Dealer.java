@@ -19,14 +19,12 @@ public class Dealer {
     public Dealer() {
         index = 0;
         valuecards = new ArrayList<>();
-        for(int i=1;i<14;i++)
-            valuecards.add(new Card(Suite.DIAMONDS,i));
-        for(int i=1;i<14;i++)
-            valuecards.add(new Card(Suite.HEARTS,i));
-        for(int i=1;i<14;i++)
-            valuecards.add(new Card(Suite.SPADES,i));
-        for(int i=1;i<14;i++)
-            valuecards.add(new Card(Suite.CLUBS,i));
+        for(int i=1;i<14;i++) {
+            valuecards.add(new Card(Suite.DIAMONDS, i));
+            valuecards.add(new Card(Suite.HEARTS, i));
+            valuecards.add(new Card(Suite.SPADES, i));
+            valuecards.add(new Card(Suite.CLUBS, i));
+        }
     }
 
     public void shuffle()

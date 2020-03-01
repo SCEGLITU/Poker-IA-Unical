@@ -4,17 +4,56 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 
 import java.util.ArrayList;
 
-public class Player {
+import static com.mygdx.game.PlayerDirection.*;
+
+public abstract class Player {
     protected String name;
     protected ArrayList<Card> cards;
     protected int money;
     protected boolean fold;
+    protected int startXCard = 0;
+    protected int startYCard = 0;
+    protected float angle = 0f;
+    PlayerDirection direction;
 
-    public Player() {
+    private Player()
+    {
+
+    }
+
+    public Player(PlayerDirection direction) {
         this.name = "SONY";
         this.money = 5000;
         this.fold = false;
         this.cards = new ArrayList<Card>();
+        this.direction = direction;
+        switchDirection();
+    }
+
+    private void switchDirection()
+    {
+        switch (direction)
+        {
+            case LEFT_PLAYER:
+                startXCard = 10;
+                startYCard = 50;
+                break;
+
+            case RIGHT_PLAYER:
+                startXCard = MyGdxGame.WORLD_WIDTH - MyGdxGame.CARD_HEIGHT + 10;
+                startYCard = 50;
+                break;
+
+            case UP_PLAYER:
+                startXCard = 270;
+                startYCard = MyGdxGame.WORLD_HEIGHT - MyGdxGame.CARD_HEIGHT;
+                break;
+
+            case DOWN_PLAYER:
+                startXCard = 270;
+                startYCard = 0;
+                break;
+        }
     }
 
     public Player(String name, int money) {
@@ -98,7 +137,26 @@ public class Player {
         this.fold = fold;
     }
 
-    public void draw(Batch batch,PlayerDirection direction){
+    public void draw(Batch batch)
+    {
+        setCardPositionToDraw();
+        drawCards(batch);
+    }
+
+    public abstract void drawCards(Batch batch);
+
+    public void setCardPositionToDraw(){
+        int x=startXCard;
+        int y=startYCard;
+        for(Card card: cards) {
+            Deck.getIstance().setCardPosition(card.getNumber(), card.getSuite(), x, y);
+            System.out.println("TIPO GIOCATORE: " + direction + " ," + card.getNumber() + " " +
+                    card.getSuite() + " , COORDINATE: " + x + " - " + y);
+            if(direction == LEFT_PLAYER || direction == RIGHT_PLAYER)
+                y += MyGdxGame.CARD_WIDTH + 30;
+            else
+                x += MyGdxGame.CARD_WIDTH + 30;
+        }
 
     }
 

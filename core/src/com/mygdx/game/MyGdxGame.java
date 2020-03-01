@@ -25,8 +25,6 @@ public class MyGdxGame extends ApplicationAdapter {
 	public void create () {
 		batch = new SpriteBatch();
 		game = new Game();
-		game.setAllCardForAllPlayer();
-		game.setCardPositionToDraw();
 	}
 
 	@Override

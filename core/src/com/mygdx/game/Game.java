@@ -8,9 +8,35 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 
 import java.util.ArrayList;
 
-enum PlayerDirection{
-    DOWN, LEFT, UP, RIGHT;
-}
+enum PlayerDirection{UP_PLAYER(0), LEFT_PLAYER(1), RIGHT_PLAYER(2), DOWN_PLAYER(3);
+int value = 5;
+    PlayerDirection(int i)
+    {
+        this.value = i;
+    }
+    public int getValue()
+    {
+        return value;
+    }
+    public static PlayerDirection getPlayerDirection(int i)
+    {
+        switch (i)
+        {
+            case 0:
+                return UP_PLAYER;
+
+            case 1:
+                return LEFT_PLAYER;
+
+            case 2:
+                return RIGHT_PLAYER;
+
+            case 3:
+                return DOWN_PLAYER;
+        }
+        return UP_PLAYER;
+    }
+};
 
 public class Game {
 
@@ -22,105 +48,77 @@ public class Game {
     private Sprite cursor;
     private int gameShift;
     private  int round= 1;
-    static final protected int CPU_UP = 0;
-    static final protected int CPU_LEFT = 1;
-    static final protected int CPU_RIGHT = 2;
+    static final public int UP_PLAYER = 0;
+    static final public int LEFT_PLAYER = 1;
+    static final public int RIGHT_PLAYER = 2;
+    static final public int DOWN_PLAYER = 3;
+    static final public int NUM_OF_PLAYERS = 4;
+    static final public int NUM_OF_CARDS = 5;
     static public Dealer dealer;
-    private Player player;
-    private ArrayList<Player> cpu;
+    private ArrayList<Player> players;
     public Deck deck;
 
     public Game() {
-        player = new Player();
         dealer = new Dealer();
-        cpu = new ArrayList<>();
+        players = new ArrayList<>();
         gameShift = 1;
-        deck = new Deck();
-        plus = new Sprite(new Texture("game/Plus.png"));
+        deck = Deck.getIstance();
+        initButton();
+        initCursor();
+        createPlayers();
+        setAllCardForAllPlayer();
+    }
+
+    public void createPlayers()
+    {
+        for(int i = 0; i < NUM_OF_PLAYERS - 1; i++)
+            players.add(new Enemy(PlayerDirection.getPlayerDirection(i)));
+        players.add(new Human(PlayerDirection.getPlayerDirection(NUM_OF_PLAYERS - 1)));
+    }
+
+    private void initCursor() {
         cursor = new Sprite(new Texture("game/cursor.png"));
-        min = new Sprite(new Texture("game/Min.png"));
-        check = new Sprite(new Texture("game/Check.png"));
-        fold = new Sprite(new Texture("game/Fold.png"));
-        raise = new Sprite(new Texture("game/Raise.png"));
-        cursor.setSize(70,70);
+        cursor.setSize(21*3,18*3);
+        cursor.setPosition(450,MyGdxGame.WORLD_HEIGHT/2f-60);
+    }
+
+    private void initButton() {
+        plus = new Sprite(new Texture("game/Plus.png"));
         plus.setSize(70,50);
-        min.setSize(70,50);
-        check.setSize(150,80);
-        fold.setSize(150,80);
-        raise.setSize(150,80);
-        cursor.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-60);
         plus.setPosition(150,MyGdxGame.WORLD_HEIGHT/2-20);
+
+        min = new Sprite(new Texture("game/Min.png"));
+        min.setSize(70,50);
         min.setPosition(300,MyGdxGame.WORLD_HEIGHT/2-30);
+
+        check = new Sprite(new Texture("game/Check.png"));
+        check.setSize(150,80);
         check.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
+
+        fold = new Sprite(new Texture("game/Fold.png"));
+        fold.setSize(150,80);
         fold.setPosition(600,MyGdxGame.WORLD_HEIGHT/2-30);
+
+        raise = new Sprite(new Texture("game/Raise.png"));
+        raise.setSize(150,80);
         raise.setPosition(750,MyGdxGame.WORLD_HEIGHT/2-30);
-        for(int i=0;i<3;i++)
-            cpu.add(new Player());
     }
 
     public void setAllCardForAllPlayer(){
         dealer.shuffle();
-        for(int i=0;i<5;i++){
-            player.addCard(dealer.getCard());}
-        for(int i=0;i<3;i++)
-            for(int j=0;j<5;j++)
-                cpu.get(i).addCard(dealer.getCard());
+        for(int i = 0; i < NUM_OF_PLAYERS; i++) {
+            System.out.println("La i: " + i);
+            for (int j = 0; j < NUM_OF_CARDS; j++) {
+                players.get(i).addCard(dealer.getCard());
+            }
+        }
     }
 
     public void changeCardforPlayer(int cpuindex, ArrayList<Integer> cardposition){
-        if(cpuindex == 0) {
-            for (int i = 0; i < cardposition.size(); i++) {
-                player.removeCard(cardposition.get(i));
-            }
-            player.addCard(dealer.getCard());
+        for (int i = 0; i < cardposition.size(); i++) {
+            players.get(cpuindex).removeCard(cardposition.get(i));
         }
-        else{
-            for (int i = 0; i < cardposition.size(); i++) {
-                cpu.get(cpuindex-1).removeCard(cardposition.get(i));
-            }
-            cpu.get(cpuindex-1).addCard(dealer.getCard());
-        }
-    }
-
-    public void setCardPositionToDraw(){
-        int x=270;
-        int y=0;
-        for(int i=0;i<5;i++){
-            System.out.println(player.getCard(i).getNumber() + "---"+ player.getCard(i).getSuite());
-            deck.setCardPosition(player.getCard(i).getNumber(),player.getCard(i).getSuite(),x,y);
-            x += MyGdxGame.CARD_WIDTH+30;
-        }
-
-        for(int i = 0; i < 3; i++){
-            // player left
-            switch (i)
-            {
-                case CPU_LEFT:
-                    x = 10;
-                    y = 50;
-                    break;
-
-                case CPU_RIGHT:
-                    x = MyGdxGame.WORLD_WIDTH - MyGdxGame.CARD_HEIGHT + 10;
-                    y = 50;
-                    break;
-
-                case CPU_UP:
-                    x = 270;
-                    y = MyGdxGame.WORLD_HEIGHT - MyGdxGame.CARD_HEIGHT;
-                    break;
-            }
-
-            for(Card card:cpu.get(i).cards) {
-                deck.setCardPosition(card.getNumber(), card.getSuite(), x, y);
-                System.out.println("TIPO GIOCATORE: " + i + " ," + card.getNumber() + " " +
-                        card.getSuite() + " , COORDINATE: " + x + " - " + y);
-                if(i != CPU_UP)
-                    y += MyGdxGame.CARD_WIDTH + 30;
-                else
-                    x += MyGdxGame.CARD_WIDTH + 30;
-            }
-        }
+        players.get(cpuindex).addCard(dealer.getCard());
     }
 
     public void drawButtonToSelect(Batch batch){
@@ -138,57 +136,35 @@ public class Game {
     }
 
     public void draw(Batch batch){
-        for(int i=0;i<5;i++){
-            deck.getCard(player.getCard(i)).draw(batch);
-        }
-
         drawButtonToSelect(batch);
-
-        for (int i = 0; i < 3; i++) {
-            float angle = 0f;
-            switch (i)
-            {
-                case CPU_UP:
-                    angle = 180f;
-                    break;
-                case CPU_LEFT:
-                    angle = 270f;
-                    break;
-                case CPU_RIGHT:
-                    angle = 90f;
-                    break;
-            }
-            for (Card card : cpu.get(i).cards) {
-                deck.getCard(card).setOrigin(MyGdxGame.CARD_WIDTH / 2, MyGdxGame.CARD_HEIGHT / 2);
-                deck.getCard(card).setRotation(angle);
-                deck.getAsDarkCard(card).draw(batch);
-            }
-        }
+        for(Player player:players)
+            player.draw(batch);
         keyboard();
+        cursor.draw(batch);
     }
 
-    //if you are on the first turn or on the 3rd, move the cursor between the buttons
+    // if you are on the first turn or on the 3rd, move the cursor between the buttons
     // otherwise move it between the cards to choose which to discard
     // PS: remember to create a new button to confirm the end of cards discard
     public void keyboard(){
         if(round==1 && gameShift==1){
             if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) && cursor.getX()!=raise.getX()){
-                cursor.setX(cursor.getX()+150);
+                cursor.setX(cursor.getX() + 150);
             }
             if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT) && cursor.getX()!=plus.getX()){
-                cursor.setX(cursor.getX()-150);
+                cursor.setX(cursor.getX() - 150);
             }
         }
         else if(round==2 && gameShift ==1){
-            if(cursor.getY()!=0){
-                cursor.setX(deck.getCard(player.getCard(0)).getX());
-                cursor.setY(0);
+            if(cursor.getY() != 35){
+                cursor.setX(deck.getCard(players.get(DOWN_PLAYER).getCard(0)).getX());
+                cursor.setY(35);
             }
-            if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) && cursor.getX()!=deck.getCard(player.getCard(4)).getX()){
-                cursor.setX(cursor.getX()+(MyGdxGame.CARD_WIDTH+30));
+            if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) && cursor.getX()!=deck.getCard(players.get(DOWN_PLAYER).getCard(4)).getX()){
+                cursor.setX(cursor.getX()+(MyGdxGame.CARD_WIDTH + 30));
             }
-            if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT) && cursor.getX()!=deck.getCard(player.getCard(0)).getX()){
-                cursor.setX(cursor.getX()-(MyGdxGame.CARD_WIDTH+30));
+            if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT) && cursor.getX()!=deck.getCard(players.get(DOWN_PLAYER).getCard(0)).getX()){
+                cursor.setX(cursor.getX()-(MyGdxGame.CARD_WIDTH + 30));
             }
 
         }
