@@ -136,11 +136,10 @@ public class Game {
         keyboard(batch);
     }
 
-    // if you are on the first turn or on the 3rd, move the cursor between the buttons
-    // otherwise move it between the cards to choose which to discard
-    // PS: remember to create a new button to confirm the end of cards discard
     public void keyboard(Batch batch){
         boolean useKeyboard = false;
+
+        // DA AGGIUSTARE
         if(round == 1 && players.get(playerShift) instanceof Human){
             players.get(playerShift).drawKeybord(batch);
 
@@ -186,13 +185,6 @@ public class Game {
                     cursor.setX(deck.getCard(players.get(DOWN_PLAYER).getCard(0)).getX() + 5);
                     cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT - (deck.getCard(players.get(DOWN_PLAYER).getCard(0)).getY()) + 5);
                 }
-                useKeyboard = true;
-            }
-            else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-                cursor.setX(cursor.getX() + (MyGdxGame.CARD_WIDTH + 30));
-                useKeyboard = true;
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) && cursor.getX() != deck.getCard(players.get(DOWN_PLAYER).getCard(0)).getX()) {
-                cursor.setX(cursor.getX() - (MyGdxGame.CARD_WIDTH + 30));
                 useKeyboard = true;
             }
         }
