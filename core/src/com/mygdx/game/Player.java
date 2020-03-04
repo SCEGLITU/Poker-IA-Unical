@@ -150,8 +150,6 @@ public abstract class Player {
         int y=startYCard;
         for(Card card: cards) {
             Deck.getIstance().setCardPosition(card.getNumber(), card.getSuite(), x, y);
-            System.out.println("TIPO GIOCATORE: " + direction + " ," + card.getNumber() + " " +
-                    card.getSuite() + " , COORDINATE: " + x + " - " + y);
             if(direction == LEFT_PLAYER || direction == RIGHT_PLAYER)
                 y += MyGdxGame.CARD_WIDTH + 30;
             else
@@ -159,5 +157,7 @@ public abstract class Player {
         }
 
     }
+
+    public abstract void drawKeybord(Batch batch);
 
 }

@@ -1,12 +1,25 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+
+import java.util.ArrayList;
 
 public class Human extends Player {
+
+    private Sprite plus = null;
+    private Sprite min = null;
+    private Sprite check = null;
+    private Sprite raise = null;
+    private Sprite fold = null;
 
     // you can have more human player, so when there isn't its shitf the card must be dark.
     public boolean shift = true;
 
+    {
+        initButton();
+    }
 
 
     public Human(PlayerDirection direction) {
@@ -27,8 +40,39 @@ public class Human extends Player {
         }
     }
 
+    @Override
+    public void drawKeybord(Batch batch) {
+        check.draw(batch);
+        fold.draw(batch);
+        min.draw(batch);
+        raise.draw(batch);
+        plus.draw(batch);
+    }
+
     public boolean isShift() {
         return shift;
+    }
+
+    private void initButton() {
+        plus = new Sprite(new Texture("game/Plus.png"));
+        plus.setSize(70,50);
+        plus.setPosition(150,MyGdxGame.WORLD_HEIGHT/2-20);
+
+        min = new Sprite(new Texture("game/Min.png"));
+        min.setSize(70,50);
+        min.setPosition(300,MyGdxGame.WORLD_HEIGHT/2-30);
+
+        check = new Sprite(new Texture("game/Check.png"));
+        check.setSize(150,80);
+        check.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
+
+        fold = new Sprite(new Texture("game/Fold.png"));
+        fold.setSize(150,80);
+        fold.setPosition(600,MyGdxGame.WORLD_HEIGHT/2-30);
+
+        raise = new Sprite(new Texture("game/Raise.png"));
+        raise.setSize(150,80);
+        raise.setPosition(750,MyGdxGame.WORLD_HEIGHT/2-30);
     }
 
     public void setShift(boolean shift) {
