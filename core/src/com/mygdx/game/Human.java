@@ -8,11 +8,11 @@ import java.util.ArrayList;
 
 public class Human extends Player {
 
-    private Sprite plus = null;
-    private Sprite min = null;
-    private Sprite check = null;
-    private Sprite raise = null;
-    private Sprite fold = null;
+    protected Sprite plus = null;
+    protected Sprite min = null;
+    protected Sprite check = null;
+    protected Sprite raise = null;
+    protected Sprite fold = null;
 
     // you can have more human player, so when there isn't its shitf the card must be dark.
     public boolean shift = true;

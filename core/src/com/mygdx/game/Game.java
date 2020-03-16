@@ -48,8 +48,12 @@ public class Game {
     private Sprite raise;
     private Sprite fold;
     private Cursor cursor;
-    private int playerShift = DOWN_PLAYER;
-    private  int round = 2;
+    private int playerShift = 0;
+    private int round = 1;
+    private int currentValue = 20;
+    private int currentPlayerValue = 0;
+    boolean isRoundFinished = false;
+    public ArrayList rmve;
     static final public int UP_PLAYER = 0;
     static final public int LEFT_PLAYER = 1;
     static final public int RIGHT_PLAYER = 2;
@@ -63,6 +67,7 @@ public class Game {
     public Game() {
         dealer = new Dealer();
         players = new ArrayList<>();
+        rmve = new ArrayList<>();
         deck = Deck.getIstance();
         initButton();
         initCursor();
@@ -112,14 +117,25 @@ public class Game {
         }
     }
 
-    public void changeCardforPlayer(int cpuindex, ArrayList<Integer> cardposition){
+    public void changeCardforPlayerForPosition(int cpuindex, ArrayList<Integer> cardposition){
         for (int i = 0; i < cardposition.size(); i++) {
             players.get(cpuindex).removeCard(cardposition.get(i));
         }
-        players.get(cpuindex).addCard(dealer.getCard());
+        for(int i=0;i<cardposition.size();i++)
+            players.get(cpuindex).addCard(dealer.getCard());
     }
 
-    public void drawButtonToSelect(Batch batch){
+    public void changeCardforPlayer(int cpuindex, ArrayList<Card> cardposition){
+        for (int i = 0; i < cardposition.size(); i++) {
+            players.get(cpuindex).removeCard(cardposition.get(i));
+        }
+
+        for(int i=0;i<cardposition.size();i++)
+            players.get(cpuindex).addCard(dealer.getCard());
+        //:'D
+    }
+
+    /*public void drawButtonToSelect(Batch batch){
         if(playerShift ==1 && (round==1 ||round==3)){
             check.draw(batch);
             fold.draw(batch);
@@ -127,76 +143,156 @@ public class Game {
             raise.draw(batch);
             plus.draw(batch);
         }
-    }
+    }*/
 
     public void draw(Batch batch){
-        drawButtonToSelect(batch);
-        for(Player player:players)
+       for(Player player:players)
             player.draw(batch);
         keyboard(batch);
     }
 
     public void keyboard(Batch batch){
         boolean useKeyboard = false;
+        if(!isRoundFinished){
+            if(!players.get(playerShift).isFold() && players.get(playerShift).getCurrentChecked()<currentValue) {
+                if ((round == 1 || round == 3) && players.get(playerShift) instanceof Human) {
+                    players.get(playerShift).drawKeybord(batch);
 
-        // DA AGGIUSTARE
-        if(round == 1 && players.get(playerShift) instanceof Human){
-            players.get(playerShift).drawKeybord(batch);
-
-            if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) && cursor.getX()!=raise.getX()){
-                cursor.setX(cursor.getX() + 150);
-                useKeyboard = true;
-            }
-            else if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT) && cursor.getX()!=plus.getX()){
-                cursor.setX(cursor.getX() - 150);
-                useKeyboard = true;
-            }
-        }
-        else if(round == 2 && players.get(playerShift) instanceof Human) {
-
-            if ((Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT)))
-            {
-                int count = 0;
-                int sizeCards = players.get(DOWN_PLAYER).getCards().size();
-                boolean setFirstPos = true;
-                for(Card card:players.get(DOWN_PLAYER).getCards())
-                {
-                    Sprite cardSprite = deck.getCard(card);
-                    if(cursor.intersectSprite(cardSprite))
-                    {
-                        if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT))
-                            count++;
-                        else
-                            count--;
-
-                        if(count == -1)
-                        {
-                            count = sizeCards - 1;
+                    //mouse pressing input
+                    if (cursor.intersectSprite(((Human) players.get(playerShift)).plus)) {
+                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                            currentPlayerValue += 10;
+                            System.out.println(currentPlayerValue); //get current raise value
                         }
-                        cursor.setX(deck.getCard(players.get(DOWN_PLAYER).getCard((count) % sizeCards)).getX() + 5);
-                        cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT - deck.getCard(players.get(DOWN_PLAYER).getCard((count) % sizeCards)).getY() + 5);
-                        setFirstPos = false;
-                        break;
                     }
-                    count++;
+                    if (cursor.intersectSprite(((Human) players.get(playerShift)).min)) {
+                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                            if (currentPlayerValue > currentValue)
+                                currentPlayerValue -= 10;
+                            System.out.println(currentPlayerValue); //get current raise value
+                        }
+                    }
+                    if (cursor.intersectSprite(((Human) players.get(playerShift)).fold)) {
+                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                            (players.get(playerShift)).setFold(true);
+                            System.out.println(players.get(playerShift).isFold()); //set fold true
+                        }
+                    }
+                    if (cursor.intersectSprite(((Human) players.get(playerShift)).check)) {
+                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                            players.get(playerShift).setCurrentChecked(currentValue);
+                            currentPlayerValue=currentValue;
+                            System.out.println(currentValue); //get current check value
+                            increaseRound();
+                        }
+                    }
+                    else if (cursor.intersectSprite(((Human) players.get(playerShift)).raise)) {
+                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && currentPlayerValue >currentValue) {
+                            currentValue = currentPlayerValue;
+                            players.get(playerShift).setCurrentChecked(currentPlayerValue);
+                            System.out.println(currentValue); //get current check value
+                            if(playerShift==0)
+                                increaseRound();
+                            else
+                                playerShift=0;
+                        }
+                    }
+                    //END
                 }
+                else if (round == 2 && players.get(playerShift) instanceof Human) {
+                    if ((Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT))) {
+                        int count = 0;
+                        int sizeCards = players.get(playerShift).getCards().size();
+                        boolean setFirstPos = true;
+                        for (Card card : players.get(playerShift).getCards()) {
+                            Sprite cardSprite = deck.getCard(card);
+                            if (cursor.intersectSprite(cardSprite)) {
+                                if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT))
+                                    count++;
+                                else
+                                    count--;
 
-                if(setFirstPos){
-                    cursor.setX(deck.getCard(players.get(DOWN_PLAYER).getCard(0)).getX() + 5);
-                    cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT - (deck.getCard(players.get(DOWN_PLAYER).getCard(0)).getY()) + 5);
+                                if (count == -1) {
+                                    count = sizeCards - 1;
+                                }
+                                cursor.setX(deck.getCard(players.get(playerShift).getCard((count) % sizeCards)).getX() + 5);
+                                cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT - deck.getCard(players.get(playerShift).getCard((count) % sizeCards)).getY() + 5);
+                                setFirstPos = false;
+                                break;
+                            }
+                            count++;
+                        }
+
+                        if (setFirstPos) {
+                            cursor.setX(deck.getCard(players.get(playerShift).getCard(0)).getX() + 5);
+                            cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT - (deck.getCard(players.get(playerShift).getCard(0)).getY()) + 5);
+                        }
+                        useKeyboard = true;
+                    }
+                    for(Card card:players.get(playerShift).getCards())
+                    {
+                        Rectangle rectangleCard = Deck.getIstance().getCard(card).getBoundingRectangle();
+                        if(rectangleCard.contains(cursor.getX(), cursor.getY()))
+                            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && (!(rmve.contains(card)))) {
+                                rmve.add(card);
+                                System.out.println("remove this card");
+                            }
+                    }
+                    if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+                        changeCardforPlayer(playerShift,rmve);
+                        System.out.println("removed all selected cards");
+                        rmve.clear();
+                        increaseRound();
+                    }
                 }
-                useKeyboard = true;
+                else if ((round == 1 || round == 3) && (!(players.get(playerShift) instanceof Human))) {
+                    //if (player.get(playershift).AI.raise){raise}
+                    //elseif (player.get(playershift).AI.check){check}
+                    //elseif (player.get(playershift).AI.fold){fold}
+                    increaseRound();
+                }
+                else if ((round == 2) && (!(players.get(playerShift) instanceof Human))) {
+                    //arraylist<Card>rmve = player.get(playershift).AI2
+                    //remove all card in rmve for player players(playerShift)
+                    //get new N cards for player players(playerShift)
+                    increaseRound();
+                }
+            }
+            else{
+                increaseRound();
             }
         }
-
-
         if(!useKeyboard && cursor.isChangedPosition())
             for(Card card:players.get(DOWN_PLAYER).getCards())
             {
                 Rectangle rectangleCard = Deck.getIstance().getCard(card).getBoundingRectangle();
-                if(rectangleCard.contains(cursor.getX(), cursor.getY()))
-                    System.out.println("Carta giocatore in basso: " + card.getSuite() + " " + card.getNumber());
+                //if(rectangleCard.contains(cursor.getX(), cursor.getY()))
+                    //System.out.println("Carta giocatore in basso: " + card.getSuite() + " " + card.getNumber());
             }
+    }
+
+    public void increaseRound(){
+        System.out.println(playerShift+" --ROUND--> "+round);
+        playerShift++;
+        currentPlayerValue=currentValue;
+        if(playerShift==4){
+            currentValue=20;
+            currentPlayerValue=20;
+            for(Player p:players)
+                if(!p.isFold()) {
+                    if(p.getMoney()>=p.getCurrentChecked())
+                        p.setMoney(p.getMoney() - p.getCurrentChecked());
+                    p.setCurrentChecked(0);
+                }
+            playerShift=0;
+            round++;
+            if(round==4){
+                for(Player p:players){
+                    p.setCurrentChecked(0);
+                }
+                isRoundFinished = true;
+            }
+        }
     }
 
     public void dispose(){

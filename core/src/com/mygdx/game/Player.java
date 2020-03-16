@@ -10,6 +10,7 @@ public abstract class Player {
     protected String name;
     protected ArrayList<Card> cards;
     protected int money;
+    protected int currentChecked=0;
     protected boolean fold;
     protected int startXCard = 0;
     protected int startYCard = 0;
@@ -136,6 +137,10 @@ public abstract class Player {
     public void setFold(boolean fold) {
         this.fold = fold;
     }
+
+    public int getCurrentChecked() { return currentChecked; }
+
+    public void setCurrentChecked(int currentChecked) {this.currentChecked = currentChecked; }
 
     public void draw(Batch batch)
     {
