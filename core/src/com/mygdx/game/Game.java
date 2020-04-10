@@ -2,13 +2,21 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.ArrayList;
+
+import it.unical.mat.embasp.base.Handler;
+import it.unical.mat.embasp.base.InputProgram;
+import it.unical.mat.embasp.base.Output;
+import it.unical.mat.embasp.languages.asp.ASPInputProgram;
+import it.unical.mat.embasp.languages.asp.AnswerSet;
+import it.unical.mat.embasp.languages.asp.AnswerSets;
+import it.unical.mat.embasp.platforms.desktop.DesktopHandler;
+import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
 
 enum PlayerDirection{UP_PLAYER(0), LEFT_PLAYER(1), RIGHT_PLAYER(2), DOWN_PLAYER(3);
 int value = 5;
@@ -47,6 +55,7 @@ public class Game {
     private Sprite check;
     private Sprite raise;
     private Sprite fold;
+    Sprite finish;
     private Cursor cursor;
     private int playerShift = 0;
     private int round = 1;
@@ -63,6 +72,10 @@ public class Game {
     static public Dealer dealer;
     private ArrayList<Player> players;
     public Deck deck;
+    private static String encodingNormalRound="../encodings/normalRound";
+    private static String encodingDiscardCardsRound="../encodings/discardCardsRound";
+    private static Handler handler;
+    InputProgram facts;
 
     public Game() {
         dealer = new Dealer();
@@ -74,7 +87,61 @@ public class Game {
         createPlayers();
         setAllCardForAllPlayer();
     }
+    public void moveByAI(int cpuIndex) {
+        if (System.getProperty("os.name").contains("Linux"))
+            handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
+        else
+            handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2.exe"));
+        facts = new ASPInputProgram();
+        ArrayList<Card> crds = players.get(cpuIndex).getCards();
+        try {
+            for (int i = 0; i < 5; i++) {
+                facts.addObjectInput(new Card(crds.get(i).suite, crds.get(i).number));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        handler.addProgram(facts);
+        InputProgram encoding = new ASPInputProgram();
+        if(round==2)
+            encoding.addFilesPath(encodingDiscardCardsRound);
+        else
+            encoding.addFilesPath(encodingNormalRound);
+        handler.addProgram(encoding);
 
+        Output o = handler.startSync();
+        AnswerSets answers = (AnswerSets) o;
+        if (answers.getAnswersets().size() == 0) {
+            System.out.println("NO ANSWERSETS!!");
+            System.exit(0);
+        }
+
+        boolean trovato = false;
+
+        //discard cards if it's the correct round
+        if (round == 2) {
+            ArrayList rmv = new ArrayList();
+            for (AnswerSet a : answers.getAnswersets()) {
+                if (trovato)
+                    break;
+                try {
+                    for (Object obj : a.getAtoms()) {
+                        if (obj instanceof Card) { //We haven't need Card obj but CardToDiscard or something like that (obv objs that DLV want to discard)
+                            rmv.add(obj);
+                        }
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            //changeCardforPlayer(cpuIndex,rmv); //discard cards here
+        }
+        else{
+            //DLV select check raise or fold
+        }
+    }
     public void createPlayers()
     {
         for(int i = 0; i < NUM_OF_PLAYERS - 1; i++)
@@ -106,6 +173,9 @@ public class Game {
         raise = new Sprite(new Texture("game/Raise.png"));
         raise.setSize(150,80);
         raise.setPosition(750,MyGdxGame.WORLD_HEIGHT/2-30);
+        finish = new Sprite(new Texture("finish.png"));
+        finish.setSize(finish.getWidth()-250,finish.getHeight()-20);
+        finish.setPosition(0,MyGdxGame.WORLD_HEIGHT/2);
     }
 
     public void setAllCardForAllPlayer(){
@@ -148,10 +218,16 @@ public class Game {
     public void draw(Batch batch){
        for(Player player:players)
             player.draw(batch);
-        keyboard(batch);
+       gameCicle(batch);
+       if(isRoundFinished) {
+           finish.draw(batch);
+           if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER)){
+               isRoundFinished=false;
+           }
+       }
     }
 
-    public void keyboard(Batch batch){
+    public void gameCicle(Batch batch){
         boolean useKeyboard = false;
         if(!isRoundFinished){
             if(!players.get(playerShift).isFold() && players.get(playerShift).getCurrentChecked()<currentValue) {
@@ -246,15 +322,11 @@ public class Game {
                     }
                 }
                 else if ((round == 1 || round == 3) && (!(players.get(playerShift) instanceof Human))) {
-                    //if (player.get(playershift).AI.raise){raise}
-                    //elseif (player.get(playershift).AI.check){check}
-                    //elseif (player.get(playershift).AI.fold){fold}
+                    moveByAI(playerShift); //decidere check fold o raise
                     increaseRound();
                 }
                 else if ((round == 2) && (!(players.get(playerShift) instanceof Human))) {
-                    //arraylist<Card>rmve = player.get(playershift).AI2
-                    //remove all card in rmve for player players(playerShift)
-                    //get new N cards for player players(playerShift)
+                    moveByAI(playerShift); //scarta carte
                     increaseRound();
                 }
             }
@@ -291,6 +363,8 @@ public class Game {
                     p.setCurrentChecked(0);
                 }
                 isRoundFinished = true;
+                playerShift=0;
+                round=1;
             }
         }
     }

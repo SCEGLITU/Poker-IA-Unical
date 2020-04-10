@@ -1,7 +1,15 @@
 package com.mygdx.game;
 
+import it.unical.mat.embasp.languages.Id;
+import it.unical.mat.embasp.languages.Param;
+
+@Id("card")
 public class Card {
+
+    @Param(0)
     protected Suite suite;
+
+    @Param(1)
     protected int number;
 
     public Card() {
