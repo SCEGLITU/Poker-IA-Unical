@@ -6,7 +6,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
+import java.util.List;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import it.unical.mat.embasp.base.Handler;
@@ -72,8 +74,8 @@ public class Game {
     static public Dealer dealer;
     private ArrayList<Player> players;
     public Deck deck;
-    private static String encodingNormalRound="../encodings/normalRound";
-    private static String encodingDiscardCardsRound="../encodings/discardCardsRound";
+    private String encodingNormalRound = "./desktop/build/resources/main/encodings/normalRound.dlv";
+    private String encodingDiscardCardsRound = "./desktop/build/resources/main/encodings/discardCardsRound.dlv";
     private static Handler handler;
     InputProgram facts;
 
@@ -89,9 +91,9 @@ public class Game {
     }
     public void moveByAI(int cpuIndex) {
         if (System.getProperty("os.name").contains("Linux"))
-            handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
+            handler = new DesktopHandler(new DLV2DesktopService("./desktop/build/resources/main/dlv2"));
         else
-            handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2.exe"));
+            handler = new DesktopHandler(new DLV2DesktopService("./desktop/build/resources/main/dlv2.win.x64_5"));
         facts = new ASPInputProgram();
         ArrayList<Card> crds = players.get(cpuIndex).getCards();
         try {
@@ -114,6 +116,16 @@ public class Game {
         if (answers.getAnswersets().size() == 0) {
             System.out.println("NO ANSWERSETS!!");
             System.exit(0);
+        }
+        else
+        {
+            for(AnswerSet an: answers.getAnswersets())
+            {
+                for(String buh:an.getAnswerSet())
+                {
+                    System.out.println(buh);
+                }
+            }
         }
 
         boolean trovato = false;
