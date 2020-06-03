@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
+
+import java.net.URL;
 import java.util.List;
 
 import java.io.File;
@@ -74,8 +76,9 @@ public class Game {
     static public Dealer dealer;
     private ArrayList<Player> players;
     public Deck deck;
-    private String encodingNormalRound = "./desktop/build/resources/main/encodings/normalRound.dlv";
-    private String encodingDiscardCardsRound = "./desktop/build/resources/main/encodings/discardCardsRound.dlv";
+    private String encodingNormalRound;
+    private String encodingDiscardCardsRound;
+    private String pathDlv;
     private static Handler handler;
     InputProgram facts;
 
@@ -88,12 +91,27 @@ public class Game {
         initCursor();
         createPlayers();
         setAllCardForAllPlayer();
+        setPathResources();
     }
+
+    private void setPathResources()
+    {
+        if (System.getProperty("os.name").contains("Linux")) {
+            pathDlv =
+                    (new File(Game.class.getResource("/").toString()).getParentFile().getParentFile().getParent()
+                            +"/resources/main/dlv2").substring(5);
+            encodingNormalRound = "encodings/normalRound.dlv";
+            encodingDiscardCardsRound= "encodings/discardCardsRound.dlv";
+        }else
+        {
+            pathDlv = "./desktop/build/resources/main/dlv2.win.x64_5";
+            encodingNormalRound = "./desktop/build/resources/main/encodings/normalRound.dlv";
+            encodingDiscardCardsRound = "./desktop/build/resources/main/encodings/discardCardsRound.dlv";
+        }
+    }
+
     public void moveByAI(int cpuIndex) {
-        if (System.getProperty("os.name").contains("Linux"))
-            handler = new DesktopHandler(new DLV2DesktopService("./desktop/build/resources/main/dlv2"));
-        else
-            handler = new DesktopHandler(new DLV2DesktopService("./desktop/build/resources/main/dlv2.win.x64_5"));
+        handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
         facts = new ASPInputProgram();
         ArrayList<Card> crds = players.get(cpuIndex).getCards();
         try {
