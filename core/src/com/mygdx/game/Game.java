@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
+import it.unical.mat.embasp.base.OptionDescriptor;
 import it.unical.mat.embasp.base.Output;
 import it.unical.mat.embasp.languages.asp.ASPInputProgram;
 import it.unical.mat.embasp.languages.asp.AnswerSet;
@@ -94,8 +95,10 @@ public class Game {
             handler = new DesktopHandler(new DLV2DesktopService("./desktop/build/resources/main/dlv2"));
         else
             handler = new DesktopHandler(new DLV2DesktopService("./desktop/build/resources/main/dlv2.win.x64_5"));
+
         facts = new ASPInputProgram();
         ArrayList<Card> crds = players.get(cpuIndex).getCards();
+
         try {
             for (int i = 0; i < 5; i++) {
                 facts.addObjectInput(new Card(crds.get(i).suite, crds.get(i).number));
@@ -103,6 +106,7 @@ public class Game {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         handler.addProgram(facts);
         InputProgram encoding = new ASPInputProgram();
         if(round==2)
@@ -111,6 +115,7 @@ public class Game {
             encoding.addFilesPath(encodingNormalRound);
         handler.addProgram(encoding);
 
+        handler.addOption(new OptionDescriptor("-n 0 "));
         Output o = handler.startSync();
         AnswerSets answers = (AnswerSets) o;
         if (answers.getAnswersets().size() == 0) {
@@ -119,13 +124,9 @@ public class Game {
         }
         else
         {
-            for(AnswerSet an: answers.getAnswersets())
-            {
-                for(String buh:an.getAnswerSet())
-                {
-                    System.out.println(buh);
-                }
-            }
+            System.out.println("[HANDLER]: " + handler);
+            System.out.println("[ANSSET]: " + answers.getAnswerSetsString());
+
         }
 
         boolean trovato = false;
