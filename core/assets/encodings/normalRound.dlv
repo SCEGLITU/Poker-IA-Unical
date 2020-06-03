@@ -1,1 +1,25 @@
-a(8).
+% all the handed card have the same num, this is possible only with wild card
+% fiveOf(N):- #count{S1: card(S1,X), card(S2,X), X=N, S1>S2} = 5, card(_,N).
+
+% A straight flush is a straight (5 cards in order, such as 5-6-7-8-9) that are all of the same suit
+straightFlush :-
+        card(S, N),
+        card(S, N + 1),
+        card(S, N + 2),
+        card(S, N + 3),
+        card(S, N + 4).
+
+% four of the handed cards have the same num
+fourOf(N):- #count{S1: card(S1,X), X=N, S1!=S} = 3, card(S,N).
+
+% three of the handed cards have the same num
+threeOf(N):- #count{S1: card(S1,X), X=N, S1!=S} = 2, card(S,N).
+
+% couple
+twoOf(N):- card(S,N), card(S1,X), X=N, S1!=S.
+
+% full
+full:- threeOf(_), twoOf(_).
+
+% double couple
+twoPair:- pairOf(N1), pairOf(N2), N1!=N2.
