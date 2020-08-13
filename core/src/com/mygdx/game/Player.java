@@ -12,8 +12,19 @@ public abstract class Player {
     protected int money;
     protected int currentChecked=0;
     protected boolean fold;
+
+    // start coordinates is where the cards are printed
     protected int startXCard = 0;
     protected int startYCard = 0;
+
+    // upgrade coordinates is where the name and the amount of money is printed
+    protected int upgradeX = 0;
+    protected int upgradeY = 0;
+
+    // notify coordinates is where the choice of the player (fold, raise, check...) is printed
+    protected int notifyX = 0;
+    protected int notifyY = 0;
+
     protected float angle = 0f;
     PlayerDirection direction;
 
@@ -38,21 +49,45 @@ public abstract class Player {
             case LEFT_PLAYER:
                 startXCard = 10;
                 startYCard = 50;
+
+                upgradeX = 0;
+                upgradeY = 0;
+
+                notifyX = 0;
+                notifyY = 0;
                 break;
 
             case RIGHT_PLAYER:
                 startXCard = MyGdxGame.WORLD_WIDTH - MyGdxGame.CARD_HEIGHT + 10;
                 startYCard = 50;
+
+                upgradeX = 0;
+                upgradeY = 0;
+
+                notifyX = 0;
+                notifyY = 0;
                 break;
 
             case UP_PLAYER:
                 startXCard = 270;
                 startYCard = MyGdxGame.WORLD_HEIGHT - MyGdxGame.CARD_HEIGHT;
+
+                upgradeX = 0;
+                upgradeY = 0;
+
+                notifyX = 0;
+                notifyY = 0;
                 break;
 
             case DOWN_PLAYER:
                 startXCard = 270;
                 startYCard = 0;
+
+                upgradeX = 0;
+                upgradeY = 0;
+
+                notifyX = 0;
+                notifyY = 0;
                 break;
         }
     }
@@ -164,5 +199,21 @@ public abstract class Player {
     }
 
     public abstract void drawKeybord(Batch batch);
+
+    public int getUpgradeX() {
+        return upgradeX;
+    }
+
+    public void setUpgradeX(int upgradeX) {
+        this.upgradeX = upgradeX;
+    }
+
+    public int getUpgradeY() {
+        return upgradeY;
+    }
+
+    public void setUpgradeY(int upgradeY) {
+        this.upgradeY = upgradeY;
+    }
 
 }
