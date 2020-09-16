@@ -277,16 +277,19 @@ public class Game {
 
                 // if it's in the round where the player can raise the sum
                 if ((round == 1 || round == 3) && player instanceof Human) {
-                    bitmapFont.draw(batch, ""+currentPlayerValue, 250,MyGdxGame.WORLD_HEIGHT/2f-30);
+                    bitmapFont.draw(batch, ""+currentPlayerValue, 250,MyGdxGame.WORLD_HEIGHT/2f+15);
                     player.drawKeybord(batch);
 
+                    if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
+                        System.out.println("Mouse x: " + cursor.getX() + " y: " + cursor.getY());
+
                     // mouse pressing input
+
 
                     // press plus
                     if (cursor.intersectSprite(((Human) player).plus)) {
                         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
                             currentPlayerValue += 10;
-
                             System.out.println(currentPlayerValue); //get current raise value
                         }
                     }
@@ -304,6 +307,7 @@ public class Game {
                     if (cursor.intersectSprite(((Human) player).fold)) {
                         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
                             player.setFold(true);
+                            printFold(playerShift, batch);
                             System.out.println(player.isFold()); // set fold true
                         }
                     }
@@ -314,7 +318,8 @@ public class Game {
                             player.setCurrentChecked(currentValue);
                             currentPlayerValue=currentValue;
                             System.out.println(currentValue); //get current check value
-                            increaseRound();
+                            printCheck(playerShift, batch);
+                            increaseRound(batch);
                         }
                     }
                     // press raise
@@ -323,8 +328,9 @@ public class Game {
                             currentValue = currentPlayerValue;
                             player.setCurrentChecked(currentPlayerValue);
                             System.out.println(currentValue); //get current check value
+                            printRaise(currentValue, playerShift, batch);
                             if(playerShift==0)
-                                increaseRound();
+                                increaseRound(batch);
                             else
                                 playerShift=0;
                         }
@@ -374,20 +380,20 @@ public class Game {
                         changeCardforPlayer(playerShift,rmve);
                         System.out.println("removed all selected cards");
                         rmve.clear();
-                        increaseRound();
+                        increaseRound(batch);
                     }
                 }
-                else if ((round == 1 || round == 3) && (!(player instanceof Human))) {
+                else if (round == 1 || round == 3) {
                     moveByAI(playerShift); //decidere check fold o raise
-                    increaseRound();
+                    increaseRound(batch);
                 }
-                else if ((round == 2) && (!(player instanceof Human))) {
+                else if (round == 2) {
                     moveByAI(playerShift); //scarta carte
-                    increaseRound();
+                    increaseRound(batch);
                 }
             }
             else{
-                increaseRound();
+                increaseRound(batch);
             }
         }
         if(!useKeyboard && cursor.isChangedPosition())
@@ -396,10 +402,30 @@ public class Game {
                 Rectangle rectangleCard = Deck.getIstance().getCard(card).getBoundingRectangle();
                 //if(rectangleCard.contains(cursor.getX(), cursor.getY()))
                     //System.out.println("Carta giocatore in basso: " + card.getSuite() + " " + card.getNumber());
+
             }
     }
 
-    public void increaseRound(){
+    private void printRaise(int currentValue, int playerShift, Batch batch) {
+       printNotify(playerShift, "RAISE " + currentValue, batch);
+    }
+
+    private void printFold(int playerShift, Batch batch) {
+        printNotify(playerShift, "FOLD", batch);
+    }
+
+    private void printCheck(int playerShift, Batch batch) {
+        printNotify(playerShift, "CHECK", batch);
+    }
+
+    private void printNotify(int playerShift, String s, Batch batch)
+    {
+        bitmapFont.draw(batch, s,
+                players.get(playerShift).getNotifyX(),players.get(playerShift).getNotifyY());
+        // wait pls :-(
+    }
+
+    public void increaseRound(Batch batch){
         System.out.println(playerShift+" --ROUND--> "+round);
         playerShift++;
         currentPlayerValue=currentValue;
@@ -415,6 +441,9 @@ public class Game {
             playerShift=0;
             round++;
             if(round==4){
+                
+                win(batch);
+                
                 for(Player p:players){
                     p.setCurrentChecked(0);
                 }
@@ -423,6 +452,24 @@ public class Game {
                 round=1;
             }
         }
+    }
+
+    private void win(Batch batch) {
+        /*
+        cosa copiata:
+        Adesso passiamo al valore delle combinazioni delle carte nel Poker all’italiana.
+        In questo elenco vediamo le combinazioni da quella piu’ forte a quella piu’ debole:
+
+            Scala reale (5 carte consecutive dello stesso seme)
+            Poker (4 carte dello stesso valore)
+            Colore (5 carte con lo stesso seme)
+            Full (3 carte dello stesso valore + 2 carte dello stesso valore)
+            Scala (5 carte consecutive con semi differenti)
+            Tris (3 carte dello stesso valore)
+            Doppia coppia (2 carte dello stesso valore + altre 2 carte dello stesso valore)
+            Coppia (2 carte dello stesso valore)
+            Carte piu’ alta
+         */
     }
 
     public void dispose(){

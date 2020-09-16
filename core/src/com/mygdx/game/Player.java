@@ -50,44 +50,44 @@ public abstract class Player {
                 startXCard = 10;
                 startYCard = 50;
 
-                upgradeX = 0;
-                upgradeY = 0;
+                upgradeX = 8;
+                upgradeY = 640;
 
-                notifyX = 0;
-                notifyY = 0;
+                notifyX = 96;
+                notifyY = 193;
                 break;
 
             case RIGHT_PLAYER:
                 startXCard = MyGdxGame.WORLD_WIDTH - MyGdxGame.CARD_HEIGHT + 10;
                 startYCard = 50;
 
-                upgradeX = 0;
-                upgradeY = 0;
+                upgradeX = 950;
+                upgradeY = 647;
 
-                notifyX = 0;
-                notifyY = 0;
+                notifyX = 813;
+                notifyY = 225;
                 break;
 
             case UP_PLAYER:
                 startXCard = 270;
                 startYCard = MyGdxGame.WORLD_HEIGHT - MyGdxGame.CARD_HEIGHT;
 
-                upgradeX = 0;
-                upgradeY = 0;
+                upgradeX = 775;
+                upgradeY = 644;
 
-                notifyX = 0;
-                notifyY = 0;
+                notifyX = 375;
+                notifyY = 528;
                 break;
 
             case DOWN_PLAYER:
                 startXCard = 270;
                 startYCard = 0;
 
-                upgradeX = 0;
-                upgradeY = 0;
+                upgradeX = 779;
+                upgradeY = 91;
 
-                notifyX = 0;
-                notifyY = 0;
+                notifyX = 387;
+                notifyY = 133;
                 break;
         }
     }
@@ -216,4 +216,19 @@ public abstract class Player {
         this.upgradeY = upgradeY;
     }
 
+    public int getNotifyX() {
+        return notifyX;
+    }
+
+    public void setNotifyX(int notifyX) {
+        this.notifyX = notifyX;
+    }
+
+    public int getNotifyY() {
+        return notifyY;
+    }
+
+    public void setNotifyY(int notifyY) {
+        this.notifyY = notifyY;
+    }
 }
