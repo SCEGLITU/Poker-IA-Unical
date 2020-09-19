@@ -218,6 +218,7 @@ public class Game {
     public void setAllCardForAllPlayer(){
         dealer.shuffle();
         for(int i = 0; i < NUM_OF_PLAYERS; i++) {
+            players.get(i).reset();
             for (int j = 0; j < NUM_OF_CARDS; j++) {
                 players.get(i).addCard(dealer.getCard());
             }
@@ -277,7 +278,7 @@ public class Game {
             Player player = players.get(playerShift);
 
             // if the player hasn't folded and the current checked sum is less than the current value of the plate
-                        if(!player.isFold() && player.getCurrentChecked() < currentValue) {
+            if(!player.isFold() && player.getCurrentChecked() < currentValue) {
 
                 // if it's in the round where the player can raise the sum
                 if ((round == 1 || round == 3) && player instanceof Human) {
@@ -452,8 +453,10 @@ public class Game {
                     p.setCurrentChecked(0);
                 }
                 isRoundFinished = true;
+                dealer.shuffle();
                 playerShift=0;
                 round=1;
+                setAllCardForAllPlayer();
             }
         }
     }
