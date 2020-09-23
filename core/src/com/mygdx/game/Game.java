@@ -84,6 +84,7 @@ public class Game {
     private String encodingDiscardCardsRound;
     private String pathDlv;
     private static Handler handler;
+    private Evaluator evaluator;
     InputProgram facts;
 
     public Game() {
@@ -97,6 +98,7 @@ public class Game {
         createPlayers();
         setAllCardForAllPlayer();
         setPathResources();
+        evaluator = new Evaluator(players);
     }
 
     private void setPathResources()
@@ -457,8 +459,9 @@ public class Game {
     }
 
     private void win(Batch batch) {
-
-        }
+        System.out.println("VINCE: " + evaluator.valueCards());
+        //printNotify(playerShift, "VINCE: " + evaluator.valueCards(), batch);
+    }
 
         /*
         cosa copiata:
@@ -475,7 +478,6 @@ public class Game {
             Coppia (2 carte dello stesso valore)
             Carte piu’ alta
          */
-    }
 
     public void dispose(){
         deck.dispose();

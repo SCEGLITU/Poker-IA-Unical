@@ -22,10 +22,16 @@ fourOf(N):- #count{S1: card(S1,X), X=N, S1!=S} = 3, card(S,N).
 threeOf(N):- #count{S1: card(S1,X), X=N, S1!=S} = 2, card(S,N).
 
 % couple
-twoOf(N):- card(S,N), card(S1,X), X=N, S1!=S.
+card(cuori, 1).
+card(fiori, 1).
+card(diamanti, 1).
+card(cuori, 2).
+card(diamanti, 2).
+
+twoOf(N):- card(S,N), card(S1,N), not threeOf(N), S1!=S.
 
 % full
-full:- threeOf(_), twoOf(_).
+full(X, X1):- threeOf(X), twoOf(X1).
 
 % double couple
 twoPair:- pairOf(N1), pairOf(N2), N1!=N2.

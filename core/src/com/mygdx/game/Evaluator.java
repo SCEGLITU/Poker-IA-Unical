@@ -45,21 +45,22 @@ public class Evaluator {
     public Map<String, Integer> hands = new HashMap<>();
 
     {
+        cardRanks.put(0,0);
         cardRanks.put(1, 14);
         for (int i = 2; i < 14; i++)
             cardRanks.put(i, i);
 
         int i = 1;
-        hands.put("HIGHEST CARD", i++);
-        hands.put("COUPLE", i++);
-        hands.put("DOUBLE COUPLE", i++);
+        hands.put("HIGHEST CARD", i); i += 15;
+        hands.put("COUPLE", i); i += 15;
+        hands.put("DOUBLE COUPLE", i); i += 15;
 
-        hands.put("TRIS", i++);
-        hands.put("STRAIGHT", i++);
-        hands.put("FULL", i++);
+        hands.put("TRIS", i); i += 15;
+        hands.put("STRAIGHT", i); i += 15;
+        hands.put("FULL", i); i += 15;
 
-        hands.put("COLOR", i++);
-        hands.put("POKER", i++);
+        hands.put("COLOR", i); i += 15;
+        hands.put("POKER", i); i += 15;
         hands.put("ROYAL STRAIGHT", i);
     }
 
@@ -73,110 +74,135 @@ public class Evaluator {
 
         int[] points = new int[players.size()];
 
-        int highestCard = 0;
-
-        int highestCoupleCard = 0;
-        int straight = 0;
-        int seedCard = 0;
-
-        int sameCard = 0;
-        int maxCard = 0;
-        int maxCard2 = 0;
-
-        Card cardCount = null;
-        Card cardCount2 = null;
-
         for (int i = 0; i < players.size(); i++) {
-            ArrayList<Card> cards = players.get(i).getCards();
-            maxCard = maxCard2 = sameCard = highestCard = straight = seedCard= 0;
-            cardCount = cardCount2 = null;
+            points[i] = getPoint(players.get(i));
 
-
-            for (Card card : cards) {
-                sameCard = 0;
-
-                // max value card
-                boolean checkStraight = false;
-                if (card.getNumber() > highestCard) {
-                    highestCard = card.getNumber();
-                    checkStraight = true;
-                }
-
-                for (Card card2 : cards) {
-                    if (card != card2) {
-                        // test straight
-                        if(checkStraight && card.getNumber() + 1 == card2.getNumber())
-                                straight++;
-
-                        // test value equal
-                        if (card.getNumber() == card2.getNumber()) {
-                            sameCard++;
-                        }
-                        // test seed equal
-                        if(seedCard != -1 && seedCard != 5 && card.getSuite().equals(card2.getSuite()))
-                            seedCard++;
-                    }
-                }
-
-                // royal straight
-                if(straight == 5 && seedCard == 5)
-                {
-                    points[i] = hands.get("ROYAL STRAIGHT")*cardRanks.get(highestCard);
-                    break;
-                }
-
-                if(seedCard != 5)
-                    seedCard = -1;
-
-                // groups of equal cards
-                if (sameCard > maxCard) {
-                    if (cardCount != null) {
-                        maxCard2 = maxCard;
-                        cardCount2 = cardCount;
-                    }
-
-                    cardCount = card;
-                    maxCard = sameCard;
-
-                    if (card.getNumber() > highestCoupleCard) {
-                        highestCoupleCard = card.getNumber();
-                    }
-                }
-
-            }
-
-            // poker
-            if(maxCard == 4 || maxCard2 == 4)
-                points[i] = hands.get("POKER") * cardRanks.get(highestCoupleCard);
-
-            // color
-            else if(seedCard == 5)
-                points[i] = hands.get("COLOR") * cardRanks.get(highestCard);
-
-            // straight
-            else if(straight == 5)
-                points[i] = hands.get("STRAIGHT") * cardRanks.get(highestCard);
-            // full
-            else if(maxCard == 3 && maxCard2 == 2)
-                points[i] = hands.get("FULL") * cardRanks.get(highestCard);
-            // tris
-            else if(maxCard == 3)
-                points[i] = hands.get("TRIS") * cardRanks.get(highestCoupleCard);
-            // double couple
-            else if(maxCard == 2 && maxCard2 == 2)
-                points[i] = hands.get("DOUBLE COUPLE") * cardRanks.get(highestCoupleCard);
-            // couple
-            else if(maxCard == 2)
-                points[i] = hands.get("COUPLE") * cardRanks.get(highestCoupleCard);
-            // highest card
-            else
-                points[i] = hands.get("HIGHEST CARD") * cardRanks.get(highestCard);
-
-
-            if (indexWinner != -1)
-                if (points[indexWinner]<points[i])
+            if (indexWinner == -1 || points[indexWinner] < points[i] ||
+                    (points[indexWinner] == points[i] && getRankHighestCard(players.get(indexWinner)) < getRankHighestCard(players.get(i))) )
                 indexWinner = i;
         }
+
+        for(int i=0; i<players.size(); i++)
+            System.out.println("POINT: " + players.get(i).getName() + "-" + points[i]);
+        System.out.println("The winner is " + indexWinner);
+
         return indexWinner;
+    }
+
+    public int getPoint(Player player)
+    {
+        // highest cards
+        int highestCard = 0, highestValueCard = 0, highestCoupleCard = 0;
+
+        // straight variable
+        int straight = 1;
+
+        // color variable
+        int seedCard = 1;
+
+        // couple, double couple, tris, full variables
+        int sameCard, maxCard = 0, maxCard2 = 0, cardCount = 0, cardCount2 = 0;
+
+        ArrayList<Card> cards = player.getCards();
+
+        for (Card card : cards)
+            System.out.println("carta: " + card.getNumber() + "-" + card.getSuite());
+
+        for (Card card : cards) {
+            sameCard = 1;
+
+            // max value card
+            boolean checkStraight = false;
+            if (highestCard == 0 || cardRanks.get(card.getNumber()) > cardRanks.get(highestCard))
+                highestCard = card.getNumber();
+
+            if(card.getNumber() > highestValueCard) {
+                checkStraight = true;
+                highestValueCard = card.getNumber();
+            }
+
+            for (Card card2 : cards) {
+                if (card != card2) {
+                    // test straight
+                    if(checkStraight && card.getNumber() - 1 == card2.getNumber())
+                        straight++;
+
+                    // test value equal
+                    if (card.getNumber() == card2.getNumber() && card.getNumber() != cardCount
+                            && card.getNumber() != cardCount2) {
+                        sameCard++;
+                    }
+                    // test seed equal
+                    if(seedCard != -1 && seedCard != 5 && card.getSuite()==card2.getSuite())
+                        seedCard++;
+                }
+            }
+
+            // royal straight
+            if(straight == 5 && seedCard == 5)
+                return calculatePoint("ROYAL STRAIGHT", highestCard, player);
+
+            // seedCard is only interesting when it's 5 for the color
+            if(seedCard != 5)
+                seedCard = -1;
+
+            // groups of equal cards
+            if (sameCard >= maxCard) {
+                maxCard2 = maxCard;
+                cardCount2 = cardCount;
+
+                cardCount = card.getNumber();
+                maxCard = sameCard;
+
+                if (sameCard >= 2 && cardRanks.get(card.getNumber()) > cardRanks.get(highestCoupleCard))
+                    highestCoupleCard = card.getNumber();
+            }
+        }
+
+        // poker
+        if(maxCard == 4 || maxCard2 == 4)
+            return calculatePoint("POKER", highestCoupleCard, player);
+        // color
+        else if(seedCard == 5)
+            return calculatePoint("COLOR", highestCard, player);
+        // straight
+        else if(straight == 5)
+            return calculatePoint("STRAIGHT", highestCard, player);
+        // full
+        else if(maxCard == 3 && maxCard2 == 2)
+            return calculatePoint("FULL", highestCoupleCard, player);
+        // tris
+        else if(maxCard == 3)
+            return calculatePoint("TRIS", highestCoupleCard, player);
+        // double couple
+        else if(maxCard == 2 && maxCard2 == 2)
+            return calculatePoint("DOUBLE COUPLE", highestCoupleCard, player);
+        // couple
+        else if(maxCard == 2)
+            return calculatePoint("COUPLE", highestCoupleCard, player);
+        // highest card
+        else
+            return calculatePoint("HIGHEST CARD", highestCoupleCard, player);
+
+    }
+
+    public int calculatePoint(String typeOfHand, int highestCardNumber, Player player)
+    {
+        if(player != null)
+            System.out.println("Player" + player.getName() + " " + typeOfHand + " " + highestCardNumber);
+        return hands.get("HIGHEST CARD") * cardRanks.get(highestCardNumber);
+    }
+
+    public int getRankHighestCard(Player player)
+    {
+        ArrayList<Card> cards = player.getCards();
+
+        int hc = 0;
+
+        for(Card card: cards)
+            if(hc > cardRanks.get(card.getNumber()))
+                hc = cardRanks.get(card.getNumber());
+
+            return hc;
     }
 }

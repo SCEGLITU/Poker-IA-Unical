@@ -36,4 +36,13 @@ public class Card {
     public void setNumber(int number) {
         this.number = number;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Card card = (Card) o;
+        return number == card.number &&
+                suite == card.suite;
+    }
 }
