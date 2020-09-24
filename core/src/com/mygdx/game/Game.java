@@ -278,7 +278,7 @@ public class Game {
             Player player = players.get(playerShift);
 
             // if the player hasn't folded and the current checked sum is less than the current value of the plate
-            if(!player.isFold() && player.getCurrentChecked() < currentValue) {
+            if(!player.isFold()) {
 
                 // if it's in the round where the player can raise the sum
                 if ((round == 1 || round == 3) && player instanceof Human) {
@@ -320,9 +320,11 @@ public class Game {
                     // press check
                     if (cursor.intersectSprite(((Human) player).check)) {
                         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                            player.setCurrentChecked(currentValue);
-                            currentPlayerValue=currentValue;
-                            System.out.println(currentValue); //get current check value
+                            if(player.getCurrentChecked() < currentValue){
+                                player.setCurrentChecked(currentValue);
+                                currentPlayerValue=currentValue;
+                                System.out.println(currentValue); //get current check value
+                            }
                             printCheck(playerShift, batch);
                             increaseRound(batch);
                         }
@@ -435,7 +437,7 @@ public class Game {
         playerShift++;
         currentPlayerValue=currentValue;
         if(playerShift==4){
-            currentValue=20;
+            currentValue=0;
             currentPlayerValue=20;
             for(Player p:players)
                 if(!p.isFold()) {
