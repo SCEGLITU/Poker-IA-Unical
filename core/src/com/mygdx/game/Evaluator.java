@@ -23,7 +23,9 @@ public class Evaluator {
 
      */
 
-    // 9 s:  Scala reale (5 carte consecutive dello stesso seme)
+    // 10 s:  Scala reale 10 - 11 - 12 - 13 - 1 dello stesso seme
+
+    // 9 s:  Scala Colore (5 carte consecutive dello stesso seme)
 
     // 8 v:  Poker (4 carte dello stesso valore)
 
@@ -45,22 +47,20 @@ public class Evaluator {
     public Map<String, Integer> hands = new HashMap<>();
 
     {
-        cardRanks.put(0,0);
+        cardRanks.put(0, 0);
         cardRanks.put(1, 14);
         for (int i = 2; i < 14; i++)
             cardRanks.put(i, i);
 
         int i = 1;
-        hands.put("HIGHEST CARD", i); i += 15;
-        hands.put("COUPLE", i); i += 15;
-        hands.put("DOUBLE COUPLE", i); i += 15;
-
-        hands.put("TRIS", i); i += 15;
-        hands.put("STRAIGHT", i); i += 15;
-        hands.put("FULL", i); i += 15;
-
-        hands.put("COLOR", i); i += 15;
-        hands.put("POKER", i); i += 15;
+        hands.put("HIGHEST CARD",   i); i += 15;
+        hands.put("COUPLE",         i); i += 15;
+        hands.put("DOUBLE COUPLE",  i); i += 15;
+        hands.put("TRIS",           i); i += 15;
+        hands.put("STRAIGHT",       i); i += 15;
+        hands.put("FULL",           i); i += 15;
+        hands.put("COLOR",          i); i += 15;
+        hands.put("POKER",          i); i += 15;
         hands.put("ROYAL STRAIGHT", i);
     }
 
@@ -182,7 +182,7 @@ public class Evaluator {
             return calculatePoint("COUPLE", highestCoupleCard, player);
         // highest card
         else
-            return calculatePoint("HIGHEST CARD", highestCoupleCard, player);
+            return calculatePoint("HIGHEST CARD", highestCard, player);
 
     }
 
@@ -190,7 +190,7 @@ public class Evaluator {
     {
         if(player != null)
             System.out.println("Player" + player.getName() + " " + typeOfHand + " " + highestCardNumber);
-        return hands.get("HIGHEST CARD") * cardRanks.get(highestCardNumber);
+        return hands.get(typeOfHand) * cardRanks.get(highestCardNumber);
     }
 
     public int getRankHighestCard(Player player)

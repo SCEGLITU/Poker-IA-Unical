@@ -69,6 +69,9 @@ public class Game {
     private int round = 1;
     private int currentValue = 20;
     private int currentPlayerValue = 0;
+    private boolean printIn = false;
+    private int countFpsToPrint = 0;
+    private double fps = 10;
     boolean isRoundFinished = false;
     public ArrayList rmve;
     static final public int UP_PLAYER = 0;
@@ -179,6 +182,7 @@ public class Game {
             //DLV select check raise or fold
         }
     }
+
     public void createPlayers()
     {
         for(int i = 0; i < NUM_OF_PLAYERS - 1; i++)
@@ -254,18 +258,32 @@ public class Game {
     }*/
 
     public void draw(Batch batch){
-       for(Player player:players) {
+        for(Player player:players) {
            player.draw(batch);
            bitmapFont.draw(batch,"" + player.getName() + "\nm: " + player.getMoney(),
                    player.getUpgradeX(), player.getUpgradeY());
-       }
-       gameCicle(batch);
-       if(isRoundFinished) {
+        }
+
+        gameCicle(batch);
+        if(isRoundFinished) {
            finish.draw(batch);
            if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER)){
                isRoundFinished=false;
            }
-       }
+        }
+
+        try {
+            Thread.sleep((long)(1000/fps-Gdx.graphics.getDeltaTime()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        if(printIn) {
+            fps = 2;
+            printIn = false;
+        }
+        else
+            fps = 15;
     }
 
     public void gameCicle(Batch batch){
@@ -427,9 +445,9 @@ public class Game {
 
     private void printNotify(int playerShift, String s, Batch batch)
     {
+        printIn = true;
         bitmapFont.draw(batch, s,
                 players.get(playerShift).getNotifyX(),players.get(playerShift).getNotifyY());
-        // wait pls :-(
     }
 
     public void increaseRound(Batch batch){
@@ -464,7 +482,11 @@ public class Game {
     }
 
     private void win(Batch batch) {
-        System.out.println("VINCE: " + evaluator.valueCards());
+        int winner = evaluator.valueCards();
+        System.out.println("VINCE: " + winner);
+        bitmapFont.draw(batch, "VINCE: " + winner,
+                MyGdxGame.WORLD_WIDTH/2, MyGdxGame.WORLD_HEIGHT/2);
+        printIn = true;
         //printNotify(playerShift, "VINCE: " + evaluator.valueCards(), batch);
     }
 

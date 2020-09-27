@@ -7,13 +7,13 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import java.util.ArrayList;
 
 /*
-        0 ----> DIAMONDS -  [0-12]
+        0   -----> DIAMONDS  -   [ 0 - 12]
 
-        1 ----->HEARTS -    [13-25]
+        1   -----> HEARTS   -   [13 - 25]
 
-        2 ----->SPADES -    [26-38]
+        2   -----> SPADES   -   [26 - 38]
 
-        3 -----> CLUBS -    [39-51]
+        3   -----> CLUBS    -   [39 - 51]
 
  */
 enum Suite{

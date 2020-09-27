@@ -1,5 +1,6 @@
 % facts format
 % card ( Seed, Number ). to represent the card of the number Number of the seed Seed.
+% the value of the plate
 
 % output format
 %
@@ -7,31 +8,53 @@
 % all the handed card have the same num, this is possible only with wild card
 % fiveOf(N):- #count{S1: card(S1,X), card(S2,X), X=N, S1>S2} = 5, card(_,N).
 
+% A straight flush is a straight of 10-11-12-13-1 all of the same suit
+royalStraight :-
+                 card(S, 10),
+                 card(S, 11),
+                 card(S, 12),
+                 card(S, 13),
+                 card(S, 1).
+
 % A straight flush is a straight (5 cards in order, such as 5-6-7-8-9) that are all of the same suit
-straightFlush :-
-        card(S, N),
-        card(S, N + 1),
-        card(S, N + 2),
-        card(S, N + 3),
-        card(S, N + 4).
+colorStraight :- straight, color.
+
+% A straight is 5 cards in order, such as 5-6-7-8-9
+straight :-
+        card(_, N),
+        card(_, N + 1),
+        card(_, N + 2),
+        card(_, N + 3),
+        card(_, N + 4).
 
 % four of the handed cards have the same num
-fourOf(N):- #count{S1: card(S1,X), X=N, S1!=S} = 3, card(S,N).
+poker(N):- #count{S1: card(S1,X), X=N, S1!=S} = 3, card(S,N).
 
 % three of the handed cards have the same num
-threeOf(N):- #count{S1: card(S1,X), X=N, S1!=S} = 2, card(S,N).
+tris(N):- #count{S1: card(S1,X), X=N, S1!=S} = 2, card(S,N), not poker(N).
 
 % couple
-card(cuori, 1).
-card(fiori, 1).
-card(diamanti, 1).
-card(cuori, 2).
-card(diamanti, 2).
-
-twoOf(N):- card(S,N), card(S1,N), not threeOf(N), S1!=S.
+couple(N):- card(S,N), card(S1,N), not tris(N), S1!=S.
 
 % full
-full(X, X1):- threeOf(X), twoOf(X1).
+full:- tris(X), couple(X1).
 
 % double couple
-twoPair:- pairOf(N1), pairOf(N2), N1!=N2.
+doubleCouple(N1, N2):- couple(N1), couple(N2), N1>N2.
+
+% color
+color:- #count{S: card(S,X)} = 1.
+
+% highestCard
+highestCard(1):- card(_,1).
+highestCard(N):- #max{N1: card(_,N1)} = N, not highestCard(1).
+
+% highest Couple Card
+
+highestCoupleCard(X):- couple(X), not doubleCouple(N,X), not full(N,X), card(_,N).
+highestCoupleCard(X):- doubleCouple(X,_).
+highestCoupleCard(X):- tris(X).
+highestCoupleCard(X):- poker(X).
+
+highestCoupleCard(X):- straight(X).
+highestCoupleCard(X):- colorStraight(X).

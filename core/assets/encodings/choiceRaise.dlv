@@ -1,0 +1,47 @@
+% input
+    % highestCard(N), highestCoupleCard(N)
+    % royalStraight, colorStraight, straight, poker(N), tris(N)
+    % couple(N), full(X, X1), doubleCouple(N1,N2)
+    % betsPointsAvg(X) = Bets/Points se è alto significa che bleffano tanto
+    % confidence(X) 1<=x<=10
+    % myWallet(X) plate(X) piatto e' quanto ci e' chiesto rialzare
+
+% output
+    % check
+    % raise(X)
+    % fold
+
+
+
+
+% straight
+raise(W):- royalStraight,   plate(X), myWallet(W).
+raise(W):- colorStraight,   plate(X), myWallet(W).
+raise(W):- straight,        plate(X), myWallet(W).
+
+
+% highestCard
+
+% betsPointsAvg     se bleffano poco/tanto
+% plate             se il piatto e' alto/basso
+% confidence        se e' "cattivo" o meno
+% mywallet          se hai tanti soldi
+
+% if I have a low card. <=7
+    % se ho uno schifo di carta
+    fold:-  highestCard(N), N<=7, N!=1.
+
+% if I have a high card 1 or >7
+    % se bleffano poco e il piatto e' basso e ho una carta "alta".
+    check:- highestCard(N), N>7, plate(S), S < 60.
+    check:- highestCard(N), N=1, plate(S), S < 60.
+
+    % se bleffano tanto e il piatto e' alto e ho una carta "alta".
+    check:- highestCard(N), N>7, plate(S), S > 60, betsPointsAvg(A), A > 20.
+    check:- highestCard(N), N=1, plate(S), S > 60, betsPointsAvg(A), A > 20.
+
+% if I have a low couple <=7
+    % se il piatto e' basso e ho una coppia piu' piccola di 7
+    raise(200-S):- couple(N), N<=7, plate(S), S < 200.
+
+    % se bleffano poco e il piatto e' alto
