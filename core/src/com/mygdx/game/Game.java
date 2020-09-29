@@ -85,6 +85,7 @@ public class Game {
     public Deck deck;
     private String encodingNormalRound;
     private String encodingDiscardCardsRound;
+    private String encodingChoiseRaise;
     private String pathDlv;
     private static Handler handler;
     private Evaluator evaluator;
@@ -110,13 +111,15 @@ public class Game {
             pathDlv =
                     (new File(Game.class.getResource("/").toString()).getParentFile().getParentFile().getParent()
                             +"/resources/main/dlv2").substring(5);
-            encodingNormalRound = "encodings/normalRound.dlv";
-            encodingDiscardCardsRound= "encodings/discardCardsRound.dlv";
+            encodingNormalRound = "core/assets/encodings/normalRound.dlv";
+            encodingDiscardCardsRound= "core/assets/encodings/discardCardsRound.dlv";
+            encodingChoiseRaise = "core/assets/encodings/choiceRaise.dlv";
         }else
         {
             pathDlv = "./desktop/build/resources/main/dlv2.win.x64_5";
             encodingNormalRound = "./desktop/build/resources/main/encodings/normalRound.dlv";
             encodingDiscardCardsRound = "./desktop/build/resources/main/encodings/discardCardsRound.dlv";
+            encodingChoiseRaise = "./desktop/build/resources/main/encodings/choiceRaise.dlv";
         }
     }
 
@@ -147,13 +150,50 @@ public class Game {
         }
         else
         {
+            System.out.println("Player: "+ cpuIndex);
+            //System.out.println("NORMALROUND FACTS: "+facts.getPrograms());
+            if(round!=2){
+                encoding = new ASPInputProgram();
+                handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
+                encoding.addFilesPath(encodingChoiseRaise);
+                facts = new ASPInputProgram();
+                facts.addProgram("myWallet("+ players.get(cpuIndex).getMoney()+").");
+                int plate=0;
+                for(int i=0;i<playerShift;i++)
+                    if(players.get(i).isFold() == false )
+                        plate+=currentValue;
+                facts.addProgram("plate("+ plate+").");
+            }
             for(AnswerSet an: answers.getAnswersets())
             {
                 for(String buh:an.getAnswerSet())
                 {
+                    if(round!=2)
+                        facts.addProgram(buh+".");
                     System.out.println(buh);
                 }
             }
+            if(round!=2){
+                handler.addProgram(facts);
+                handler.addProgram(encoding);
+                o = handler.startSync();
+                answers = (AnswerSets) o;
+                if (answers.getAnswersets().size() == 0) {
+                    System.out.println("NO ANSWERSETS!!");
+                    //System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
+                }
+                else{
+                    //System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
+                    for(AnswerSet an: answers.getAnswersets())
+                    {
+                        System.out.println("ANSWERSET:");
+                        for(String buh:an.getAnswerSet())
+                            System.out.println(buh);
+                    }
+                }
+            }
+
+
         }
 
         boolean trovato = false;
