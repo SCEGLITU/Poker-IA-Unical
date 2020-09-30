@@ -15,7 +15,10 @@ import java.util.List;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
 import it.unical.mat.embasp.base.Output;
@@ -65,6 +68,8 @@ public class Game {
     private Sprite fold;
     Sprite finish;
     private Cursor cursor;
+    int winner =-1;
+    int cash=0;
     private int playerShift = 0;
     private int round = 1;
     private int currentValue = 20;
@@ -123,7 +128,7 @@ public class Game {
         }
     }
 
-    public void moveByAI(int cpuIndex) {
+    public void moveByAI(int cpuIndex,Batch batch) {
         handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
         facts = new ASPInputProgram();
         ArrayList<Card> crds = players.get(cpuIndex).getCards();
@@ -153,6 +158,7 @@ public class Game {
             System.out.println("Player: "+ cpuIndex);
             //System.out.println("NORMALROUND FACTS: "+facts.getPrograms());
             if(round!=2){
+                //Insert all facts for round 1-3 in choiseRaise.dlv
                 encoding = new ASPInputProgram();
                 handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
                 encoding.addFilesPath(encodingChoiseRaise);
@@ -162,15 +168,18 @@ public class Game {
                 for(int i=0;i<playerShift;i++)
                     if(players.get(i).isFold() == false )
                         plate+=currentValue;
+                //plate+=cash; if I sum cash raiseChose.dlv goes in loop
+                //probably problem: code in dlv || missing parameters in input like AVG
                 facts.addProgram("plate("+ plate+").");
             }
             for(AnswerSet an: answers.getAnswersets())
             {
                 for(String buh:an.getAnswerSet())
                 {
-                    if(round!=2)
+                    if(round!=2){
                         facts.addProgram(buh+".");
-                    System.out.println(buh);
+                        //End insert facts round 1-3 choiseRaise.dlv
+                    }
                 }
             }
             if(round!=2){
@@ -181,14 +190,59 @@ public class Game {
                 if (answers.getAnswersets().size() == 0) {
                     System.out.println("NO ANSWERSETS!!");
                     //System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
+                    System.exit(0);
                 }
                 else{
                     //System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
                     for(AnswerSet an: answers.getAnswersets())
                     {
-                        System.out.println("ANSWERSET:");
-                        for(String buh:an.getAnswerSet())
+                        Pattern patternRaise=Pattern.compile("raise\\((\\d+)\\)");
+                        Matcher matcher;
+                        String r=null;
+                        boolean check=false;
+                        boolean fold = false;
+                        System.out.println("----------ANSWERSET: -----------");
+                        for(String buh:an.getAnswerSet()) {
                             System.out.println(buh);
+                            matcher=patternRaise.matcher(buh);
+                            if(matcher.find()){
+                                r=matcher.group(1);
+                                System.out.println(r+" RAISE LIFE x0x0");
+                            }
+                            if(buh.matches("check")){
+                                check=true;
+                            }
+                            if(buh.matches("fold")){
+                                fold=true;
+                            }
+                        }
+                        System.out.println("----------END ANSWERSET------------");
+                        if(r!=null) {
+                            if( currentValue < Integer.parseInt(r)) {
+                                System.out.println("DLV RAISE. I'll do raise 'cause CURRENT VALUE:"+currentValue+"< "+r);
+                                currentValue = Integer.parseInt(r);
+                                currentPlayerValue = currentValue;
+                                players.get(playerShift).setCurrentChecked(currentValue);
+                                if (playerShift != 0)
+                                    playerShift = -1;
+                                else
+                                    increaseRound(batch);
+                            }
+                            else
+                                players.get(playerShift).setCurrentChecked(currentValue);
+                                System.out.println("if there is an error in DLV code and I'm trying to raise a raise<currentValue, then check");
+                                increaseRound(batch);
+                        }
+                        else if(r==null && check){
+                            players.get(playerShift).setCurrentChecked(currentValue);
+                            increaseRound(batch);
+                            System.out.println("DLV CHECK");
+                        }
+                        else if(r==null && check==false &&fold==true){
+                            players.get(playerShift).setFold(true);
+                            increaseRound(batch);
+                            System.out.println("DLV FOLD");
+                        }
                     }
                 }
             }
@@ -449,11 +503,10 @@ public class Game {
                     }
                 }
                 else if (round == 1 || round == 3) {
-                    moveByAI(playerShift); //decidere check fold o raise
-                    increaseRound(batch);
+                    moveByAI(playerShift,batch); //decidere check fold o raise
                 }
                 else if (round == 2) {
-                    moveByAI(playerShift); //scarta carte
+                    //moveByAI(playerShift,batch); //scarta carte
                     increaseRound(batch);
                 }
             }
@@ -499,8 +552,10 @@ public class Game {
             currentPlayerValue=20;
             for(Player p:players)
                 if(!p.isFold()) {
-                    if(p.getMoney()>=p.getCurrentChecked())
+                    if(p.getMoney()>=p.getCurrentChecked()){
                         p.setMoney(p.getMoney() - p.getCurrentChecked());
+                        cash+=p.getCurrentChecked();
+                    }
                     p.setCurrentChecked(0);
                 }
             playerShift=0;
@@ -508,12 +563,13 @@ public class Game {
             if(round==4){
                 
                 win(batch);
-                
+                players.get(winner).setMoney(players.get(winner).getMoney()+cash);
                 for(Player p:players){
                     p.setCurrentChecked(0);
                 }
                 isRoundFinished = true;
                 dealer.shuffle();
+                cash=0;
                 playerShift=0;
                 round=1;
                 setAllCardForAllPlayer();
@@ -522,7 +578,7 @@ public class Game {
     }
 
     private void win(Batch batch) {
-        int winner = evaluator.valueCards();
+        winner = evaluator.valueCards();
         System.out.println("VINCE: " + winner);
         bitmapFont.draw(batch, "VINCE: " + winner,
                 MyGdxGame.WORLD_WIDTH/2, MyGdxGame.WORLD_HEIGHT/2);
