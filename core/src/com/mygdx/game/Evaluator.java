@@ -84,7 +84,7 @@ public class Evaluator {
 
         for(int i=0; i<players.size(); i++)
             System.out.println("POINT: " + players.get(i).getName() + "-" + points[i]);
-        System.out.println("The winner is " + indexWinner);
+        System.out.println("The winner is " + players.get(indexWinner).getName());
 
         return indexWinner;
     }
@@ -104,9 +104,6 @@ public class Evaluator {
         int sameCard, maxCard = 0, maxCard2 = 0, cardCount = 0, cardCount2 = 0;
 
         ArrayList<Card> cards = player.getCards();
-
-        for (Card card : cards)
-            System.out.println("carta: " + card.getNumber() + "-" + card.getSuite());
 
         for (Card card : cards) {
             sameCard = 1;
@@ -189,7 +186,7 @@ public class Evaluator {
     public int calculatePoint(String typeOfHand, int highestCardNumber, Player player)
     {
         if(player != null)
-            System.out.println("Player" + player.getName() + " " + typeOfHand + " " + highestCardNumber);
+            System.out.println("Player " + player.getName() + " " + typeOfHand + " " + highestCardNumber);
         return hands.get(typeOfHand) * cardRanks.get(highestCardNumber);
     }
 

@@ -28,35 +28,7 @@ import it.unical.mat.embasp.languages.asp.AnswerSets;
 import it.unical.mat.embasp.platforms.desktop.DesktopHandler;
 import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
 
-enum PlayerDirection{UP_PLAYER(0), LEFT_PLAYER(1), RIGHT_PLAYER(2), DOWN_PLAYER(3);
-int value = 5;
-    PlayerDirection(int i)
-    {
-        this.value = i;
-    }
-    public int getValue()
-    {
-        return value;
-    }
-    public static PlayerDirection getPlayerDirection(int i)
-    {
-        switch (i)
-        {
-            case 0:
-                return UP_PLAYER;
 
-            case 1:
-                return LEFT_PLAYER;
-
-            case 2:
-                return RIGHT_PLAYER;
-
-            case 3:
-                return DOWN_PLAYER;
-        }
-        return UP_PLAYER;
-    }
-};
 
 public class Game {
 
@@ -129,7 +101,10 @@ public class Game {
     }
 
     public void moveByAI(int cpuIndex,Batch batch) {
+
         handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
+
+//        add facts to program
         facts = new ASPInputProgram();
         ArrayList<Card> crds = players.get(cpuIndex).getCards();
         try {
@@ -140,6 +115,8 @@ public class Game {
             e.printStackTrace();
         }
         handler.addProgram(facts);
+
+//        add encoding according to the round to the program
         InputProgram encoding = new ASPInputProgram();
         if(round==2)
             encoding.addFilesPath(encodingDiscardCardsRound);
@@ -147,50 +124,61 @@ public class Game {
             encoding.addFilesPath(encodingNormalRound);
         handler.addProgram(encoding);
 
+//        catch output of the program
         Output o = handler.startSync();
         AnswerSets answers = (AnswerSets) o;
+
+//        if is empty print "no answersets", it's better a RunTimeException
         if (answers.getAnswersets().size() == 0) {
-            System.out.println("NO ANSWERSETS!!");
-            System.exit(0);
+            throw new RuntimeException("NO ANSWERSET!");
         }
         else
         {
+
             System.out.println("Player: "+ cpuIndex);
             //System.out.println("NORMALROUND FACTS: "+facts.getPrograms());
+
             if(round!=2){
+
+                // to value the next move, there is another ASP program called "choiceRaise.dlv"
+
                 //Insert all facts for round 1-3 in choiseRaise.dlv
                 encoding = new ASPInputProgram();
                 handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
+
                 encoding.addFilesPath(encodingChoiseRaise);
+
                 facts = new ASPInputProgram();
+
+
+
+
                 facts.addProgram("myWallet("+ players.get(cpuIndex).getMoney()+").");
                 int plate=0;
                 for(int i=0;i<playerShift;i++)
-                    if(players.get(i).isFold() == false )
+                    if(!players.get(i).isFold())
                         plate+=currentValue;
                 //plate+=cash; if I sum cash raiseChose.dlv goes in loop
                 //probably problem: code in dlv || missing parameters in input like AVG
                 facts.addProgram("plate("+ plate+").");
-            }
-            for(AnswerSet an: answers.getAnswersets())
-            {
-                for(String buh:an.getAnswerSet())
-                {
-                    if(round!=2){
-                        facts.addProgram(buh+".");
-                        //End insert facts round 1-3 choiseRaise.dlv
+                facts.addProgram(String.format("betsPointsAvg(%d).",15));
+                facts.addProgram(String.format("confidence(%d).", 8));
+
+                for (AnswerSet an : answers.getAnswersets()) {
+                    for (String atom : an.getAnswerSet()) {
+                        facts.addProgram(atom + ".");
                     }
                 }
-            }
-            if(round!=2){
+
                 handler.addProgram(facts);
                 handler.addProgram(encoding);
                 o = handler.startSync();
+
+                // manage output choiceRaise
                 answers = (AnswerSets) o;
                 if (answers.getAnswersets().size() == 0) {
-                    System.out.println("NO ANSWERSETS!!");
+                    throw new RuntimeException("NO ANSWERSET!");
                     //System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
-                    System.exit(0);
                 }
                 else{
                     //System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
@@ -198,49 +186,56 @@ public class Game {
                     {
                         Pattern patternRaise=Pattern.compile("raise\\((\\d+)\\)");
                         Matcher matcher;
-                        String r=null;
+                        Integer raiseSum = null;
                         boolean check=false;
                         boolean fold = false;
-                        System.out.println("----------ANSWERSET: -----------");
-                        for(String buh:an.getAnswerSet()) {
-                            System.out.println(buh);
-                            matcher=patternRaise.matcher(buh);
+
+                        for(String atom:an.getAnswerSet()) {
+                            matcher=patternRaise.matcher(atom);
+
                             if(matcher.find()){
-                                r=matcher.group(1);
-                                System.out.println(r+" RAISE LIFE x0x0");
+                                raiseSum=Integer.parseInt(matcher.group(1));
                             }
-                            if(buh.matches("check")){
+                            if(atom.matches("check")){
                                 check=true;
                             }
-                            if(buh.matches("fold")){
+                            if(atom.matches("fold")){
                                 fold=true;
                             }
                         }
-                        System.out.println("----------END ANSWERSET------------");
-                        if(r!=null) {
-                            if( currentValue < Integer.parseInt(r)) {
-                                System.out.println("DLV RAISE. I'll do raise 'cause CURRENT VALUE:"+currentValue+"< "+r);
-                                currentValue = Integer.parseInt(r);
+
+                        // if there is raise
+                        if(raiseSum!=null) {
+                            System.out.println("currentValue = " + currentValue);
+
+                            if(currentValue < raiseSum) {
+
+                                System.out.println("DLV RAISE. I'll do raise 'cause CURRENT VALUE:"+currentValue+"< "+raiseSum);
+                                currentValue += raiseSum;
                                 currentPlayerValue = currentValue;
+
+                                players.get(playerShift).setMoney
+                                        (players.get(playerShift).getMoney()-raiseSum);
+
                                 players.get(playerShift).setCurrentChecked(currentValue);
+
+
                                 if (playerShift != 0)
                                     playerShift = -1;
-                                else
-                                    increaseRound(batch);
                             }
-                            else
+                            else{
                                 players.get(playerShift).setCurrentChecked(currentValue);
-                                System.out.println("if there is an error in DLV code and I'm trying to raise a raise<currentValue, then check");
-                                increaseRound(batch);
+                            }
+                                System.out.println("if there is an error in DLV code and " +
+                                        "I'm trying to raise a raise<currentValue, then check");
+                            printRaise(currentValue,playerShift,batch);
                         }
-                        else if(r==null && check){
+                        else if(check){
                             players.get(playerShift).setCurrentChecked(currentValue);
-                            increaseRound(batch);
                             System.out.println("DLV CHECK");
                         }
-                        else if(r==null && check==false &&fold==true){
+                        else if(fold){
                             players.get(playerShift).setFold(true);
-                            increaseRound(batch);
                             System.out.println("DLV FOLD");
                         }
                     }
@@ -279,8 +274,14 @@ public class Game {
 
     public void createPlayers()
     {
-        for(int i = 0; i < NUM_OF_PLAYERS - 1; i++)
-            players.add(new Enemy(PlayerDirection.getPlayerDirection(i)));
+        players.add(new Enemy(PlayerDirection.getPlayerDirection(LEFT_PLAYER)));
+        players.add(new Enemy(PlayerDirection.getPlayerDirection(UP_PLAYER)));
+        players.add(new Enemy(PlayerDirection.getPlayerDirection(RIGHT_PLAYER)));
+
+        for(int i=1; i<4; i++){
+            players.get(i-1).setName("ENEMY-" + i);
+        }
+
         players.add(new Human(PlayerDirection.getPlayerDirection(NUM_OF_PLAYERS - 1)));
     }
 
@@ -351,6 +352,8 @@ public class Game {
         }
     }*/
 
+    static int g = 0;
+
     public void draw(Batch batch){
         for(Player player:players) {
            player.draw(batch);
@@ -359,6 +362,11 @@ public class Game {
         }
 
         gameCicle(batch);
+        if(g<=4){
+            System.out.println("Game Cicle");
+        }
+
+        g++;
         if(isRoundFinished) {
            finish.draw(batch);
            if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER)){
@@ -396,9 +404,6 @@ public class Game {
                 if ((round == 1 || round == 3) && player instanceof Human) {
                     bitmapFont.draw(batch, ""+currentPlayerValue, 250,MyGdxGame.WORLD_HEIGHT/2f+15);
                     player.drawKeybord(batch);
-
-                    if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT))
-                        System.out.println("Mouse x: " + cursor.getX() + " y: " + cursor.getY());
 
                     // mouse pressing input
 
@@ -473,7 +478,8 @@ public class Game {
                                     count = sizeCards - 1;
                                 }
                                 cursor.setX(deck.getCard(player.getCard((count) % sizeCards)).getX() + 5);
-                                cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT - deck.getCard(player.getCard((count) % sizeCards)).getY() + 5);
+                                cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT -
+                                        deck.getCard(player.getCard((count) % sizeCards)).getY() + 5);
                                 setFirstPos = false;
                                 break;
                             }
@@ -482,7 +488,8 @@ public class Game {
 
                         if (setFirstPos) {
                             cursor.setX(deck.getCard(player.getCard(0)).getX() + 5);
-                            cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT - (deck.getCard(player.getCard(0)).getY()) + 5);
+                            cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT -
+                                    (deck.getCard(player.getCard(0)).getY()) + 5);
                         }
                         useKeyboard = true;
                     }
@@ -504,6 +511,7 @@ public class Game {
                 }
                 else if (round == 1 || round == 3) {
                     moveByAI(playerShift,batch); //decidere check fold o raise
+                    increaseRound(batch);
                 }
                 else if (round == 2) {
                     //moveByAI(playerShift,batch); //scarta carte
@@ -579,11 +587,9 @@ public class Game {
 
     private void win(Batch batch) {
         winner = evaluator.valueCards();
-        System.out.println("VINCE: " + winner);
         bitmapFont.draw(batch, "VINCE: " + winner,
                 MyGdxGame.WORLD_WIDTH/2, MyGdxGame.WORLD_HEIGHT/2);
         printIn = true;
-        //printNotify(playerShift, "VINCE: " + evaluator.valueCards(), batch);
     }
 
         /*

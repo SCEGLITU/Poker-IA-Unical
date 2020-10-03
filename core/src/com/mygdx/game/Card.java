@@ -45,4 +45,12 @@ public class Card {
         return number == card.number &&
                 suite == card.suite;
     }
+
+    @Override
+    public String toString() {
+        return "Card{" +
+                "suite=" + suite +
+                ", number=" + number +
+                '}';
+    }
 }

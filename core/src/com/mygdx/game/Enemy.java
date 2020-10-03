@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import java.util.ArrayList;
 
 public class Enemy extends Player {
+
     public Enemy(PlayerDirection direction) {
         super(direction);
     }
