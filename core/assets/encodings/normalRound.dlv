@@ -37,7 +37,7 @@ tris(N):- #count{S1: card(S1,X), X=N, S1!=S} = 2, card(S,N), not poker(N).
 couple(N):- card(S,N), card(S1,N), not tris(N), S1!=S.
 
 % full
-full:- tris(X), couple(X1).
+full(X,X1):- tris(X), couple(X1).
 
 % double couple
 doubleCouple(N1, N2):- couple(N1), couple(N2), N1>N2.
@@ -56,5 +56,8 @@ highestCoupleCard(X):- doubleCouple(X,_).
 highestCoupleCard(X):- tris(X).
 highestCoupleCard(X):- poker(X).
 
-highestCoupleCard(X):- straight(X).
-highestCoupleCard(X):- colorStraight(X).
+
+highestCoupleCard:- straight.
+highestCoupleCard:- colorStraight.
+highestCoupleCard:- royalStraight.
+highestCoupleCard:- color.

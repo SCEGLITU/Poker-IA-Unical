@@ -90,13 +90,13 @@ public class Game {
                             +"/resources/main/dlv2").substring(5);
             encodingNormalRound = "core/assets/encodings/normalRound.dlv";
             encodingDiscardCardsRound= "core/assets/encodings/discardCardsRound.dlv";
-            encodingChoiseRaise = "core/assets/encodings/choiceRaise.dlv";
+            encodingChoiseRaise = "core/assets/encodings/choiceRaise2.dlv";
         }else
         {
             pathDlv = "./desktop/build/resources/main/dlv2.win.x64_5";
             encodingNormalRound = "./desktop/build/resources/main/encodings/normalRound.dlv";
             encodingDiscardCardsRound = "./desktop/build/resources/main/encodings/discardCardsRound.dlv";
-            encodingChoiseRaise = "./desktop/build/resources/main/encodings/choiceRaise.dlv";
+            encodingChoiseRaise = "./desktop/build/resources/main/encodings/choiceRaise2.dlv";
         }
     }
 
@@ -158,9 +158,10 @@ public class Game {
                 for(int i=0;i<playerShift;i++)
                     if(!players.get(i).isFold())
                         plate+=currentValue;
-                //plate+=cash; if I sum cash raiseChose.dlv goes in loop
+                plate+=cash; //if I sum cash raiseChose.dlv goes in loop
                 //probably problem: code in dlv || missing parameters in input like AVG
                 facts.addProgram("plate("+ plate+").");
+                facts.addProgram("currentValue("+currentValue+").");
                 facts.addProgram(String.format("betsPointsAvg(%d).",15));
                 facts.addProgram(String.format("confidence(%d).", 8));
 
@@ -177,8 +178,8 @@ public class Game {
                 // manage output choiceRaise
                 answers = (AnswerSets) o;
                 if (answers.getAnswersets().size() == 0) {
-                    throw new RuntimeException("NO ANSWERSET!");
-                    //System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
+                    //throw new RuntimeException("NO ANSWERSET!");
+                    System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
                 }
                 else{
                     //System.out.println("CHOICERAISE FACTS "+facts.getPrograms());
@@ -191,6 +192,7 @@ public class Game {
                         boolean fold = false;
 
                         for(String atom:an.getAnswerSet()) {
+                            System.out.println(atom);
                             matcher=patternRaise.matcher(atom);
 
                             if(matcher.find()){
@@ -228,7 +230,7 @@ public class Game {
                             }
                                 System.out.println("if there is an error in DLV code and " +
                                         "I'm trying to raise a raise<currentValue, then check");
-                            printRaise(currentValue,playerShift,batch);
+                            //printRaise(currentValue,playerShift,batch);
                         }
                         else if(check){
                             players.get(playerShift).setCurrentChecked(currentValue);
@@ -278,8 +280,8 @@ public class Game {
         players.add(new Enemy(PlayerDirection.getPlayerDirection(UP_PLAYER)));
         players.add(new Enemy(PlayerDirection.getPlayerDirection(RIGHT_PLAYER)));
 
-        for(int i=1; i<4; i++){
-            players.get(i-1).setName("ENEMY-" + i);
+        for(int i=0; i<3; i++){
+            players.get(i).setName("ENEMY-" + i);
         }
 
         players.add(new Human(PlayerDirection.getPlayerDirection(NUM_OF_PLAYERS - 1)));
@@ -574,12 +576,14 @@ public class Game {
                 players.get(winner).setMoney(players.get(winner).getMoney()+cash);
                 for(Player p:players){
                     p.setCurrentChecked(0);
+                    p.setFold(false);
                 }
                 isRoundFinished = true;
                 dealer.shuffle();
                 cash=0;
                 playerShift=0;
                 round=1;
+                currentValue=20;
                 setAllCardForAllPlayer();
             }
         }

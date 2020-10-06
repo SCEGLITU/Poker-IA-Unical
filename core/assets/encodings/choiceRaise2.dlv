@@ -1,0 +1,64 @@
+% input
+    % highestCard(N), highestCoupleCard(N)
+    %SORTED POINT LIST
+    % royalStraight, colorStraight, poker(N), full(X, X1), color, straight
+    % tris(N), doubleCouple(N1,N2), couple(N), highestCard(N)
+    %END
+    % myWallet(X) plate(X), currentValue(X)  budget, piatto, currentValue(X)
+
+% output
+    % check
+    % raise(X)
+    % fold
+
+%:-fold ,currentValue(Z), Z=0.
+
+%:-raise(_), check;
+%:-raise(_), fold;
+%:-fold, check;
+%:-check, myWallet(X), currentValue(Z), X<Z.
+%:-raise(X), currentValue(Y), Y>X.
+% all fold cases
+%defence
+fold :- myWallet(X), currentValue(Z), X<Z. %fold if player has his budget<current value
+fold :- highestCard(N),N<8, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X<1000, currentValue(Z), Z>20.
+fold :- highestCard(N),N<8, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X<1000, currentValue(Z), Z>20.
+fold :- highestCard(N),N<13, not highestCoupleCard,not highestCoupleCard(N), currentValue(Z), Z>=60.
+fold :- not highestCoupleCard,not highestCoupleCard(N), card(_,N), myWallet(X), X<=1000.
+fold :- couple(N),myWallet(X), X<=700,currentValue(Z), Z>=200.
+fold :- doubleCouple(N),myWallet(X), X<=500,currentValue(Z), Z>=200.
+fold :- tris(N),myWallet(X), X<=600,currentValue(Z), Z>=200.
+%over
+fold :- couple(N), currentValue(Z), Z>=300, myWallet(X), X>2000.
+fold :- doubleCouple(N,N2), currentValue(Z), Z>=400, myWallet(X), X>2000.
+fold :- tris(N), currentValue(Z), Z>=450, myWallet(X), X>2000.
+fold :- straight, currentValue(Z), Z>=500, myWallet(X), X>2000.
+fold :- color, currentValue(Z), Z>=700, myWallet(X), X>2000.
+fold :- full(N,N2), currentValue(Z), Z>=700, myWallet(X), X>2000.
+fold :- poker(N), currentValue(Z), Z>=1400, myWallet(X), X>2000.
+%end fold cases
+
+% all check cases
+check :- highestCard(N),N=1, not highestCoupleCard,not highestCoupleCard(N),currentValue(Z), Z<=20.
+check :- highestCard(N),N<13, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X>2000, currentValue(Z), Z<=60.
+check :- couple(N), currentValue(Z), Z<300, Z>=100.
+check :- doubleCouple(N,N2), currentValue(Z), Z<400, Z>=100.
+check :- tris(N), currentValue(Z), Z<450, Z>=100.
+check :- straight, currentValue(Z), Z<500, Z>=100.
+check :- color, currentValue(Z), Z<700, Z>=200.
+check :- full(N,N2), currentValue(Z), Z<700, Z>=300.
+check :- poker(N), currentValue(Z), Z<1400,Z>=400.
+check :- colorStraight, currentValue(Z), Z>=500.
+check :- royalStraight, currentValue(Z), Z>=500.
+%end
+
+%all raise cases
+raise(A) :- couple(N), currentValue(Z), Z<100, A=20+Z.
+raise(A) :- doubleCouple(N),currentValue(Z), Z<100, A=20+Z.
+raise(A) :- tris(N), currentValue(Z), Z<100, A=30+Z.
+raise(A) :- straight, currentValue(Z), Z<100, A=40+Z.
+raise(A) :- color, currentValue(Z), Z<200, A=30+Z.
+raise(A) :- full(N,N2), currentValue(Z), Z<300, A=30+Z.
+raise(A) :- poker(N), currentValue(Z), Z<400, A=30+Z.
+raise(A) :- colorStraight, currentValue(Z), Z<500, A=30+Z.
+raise(A) :- royalStraight, currentValue(Z), Z<500, A=30+Z.
