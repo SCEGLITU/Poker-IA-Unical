@@ -213,11 +213,8 @@ public class Game {
                             if(currentValue < raiseSum) {
 
                                 System.out.println("DLV RAISE. I'll do raise 'cause CURRENT VALUE:"+currentValue+"< "+raiseSum);
-                                currentValue += raiseSum;
+                                currentValue = raiseSum;
                                 currentPlayerValue = currentValue;
-
-                                players.get(playerShift).setMoney
-                                        (players.get(playerShift).getMoney()-raiseSum);
 
                                 players.get(playerShift).setCurrentChecked(currentValue);
 
