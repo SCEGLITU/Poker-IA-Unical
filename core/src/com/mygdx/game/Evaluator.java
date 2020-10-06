@@ -79,7 +79,8 @@ public class Evaluator {
 
             if (indexWinner == -1 || points[indexWinner] < points[i] ||
                     (points[indexWinner] == points[i] && getRankHighestCard(players.get(indexWinner)) < getRankHighestCard(players.get(i))) )
-                indexWinner = i;
+                if(!players.get(i).isFold())
+                    indexWinner = i;
         }
 
         for(int i=0; i<players.size(); i++)
