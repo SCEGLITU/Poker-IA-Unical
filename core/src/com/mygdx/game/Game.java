@@ -41,10 +41,12 @@ public class Game {
     Sprite finish;
     private Cursor cursor;
     int winner =-1;
-    int cash=0;
+    boolean blind=false;
+    int cash=40;
     private int playerShift = 0;
     private int round = 1;
-    private int currentValue = 20;
+
+    private int currentValue = 0;
     private int currentPlayerValue = 0;
     private boolean printIn = false;
     private int countFpsToPrint = 0;
@@ -390,8 +392,11 @@ public class Game {
     public void gameCicle(Batch batch){
 
         boolean useKeyboard = false;
-
-
+        if(!blind) {
+            for (Player p : players)
+                p.setMoney(p.getMoney() - 10);
+            blind=true;
+        }
         if(!isRoundFinished){
 
             Player player = players.get(playerShift);
@@ -577,10 +582,11 @@ public class Game {
                 }
                 isRoundFinished = true;
                 dealer.shuffle();
-                cash=0;
+                cash=40;
                 playerShift=0;
                 round=1;
-                currentValue=20;
+                blind=false;
+                currentValue=0;
                 setAllCardForAllPlayer();
             }
         }
