@@ -17,7 +17,7 @@ public class Enemy extends Player {
     @Override
     public void drawCards(Batch batch) {
         for(Card card:cards)
-            Deck.getIstance().getAsDarkCard(card).draw(batch);
+            Deck.getIstance().getCard(card).draw(batch);
     }
 
     @Override

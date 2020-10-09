@@ -13,7 +13,7 @@ public class Human extends Player {
     protected Sprite check = null;
     protected Sprite raise = null;
     protected Sprite fold = null;
-
+    protected Sprite call = null;
     // you can have more human player, so when there isn't its shitf the card must be dark.
     public boolean shift = true;
 
@@ -42,7 +42,10 @@ public class Human extends Player {
 
     @Override
     public void drawKeybord(Batch batch) {
-        check.draw(batch);
+        if(Game.currentValue==0)
+            check.draw(batch);
+        else
+            call.draw(batch);
         fold.draw(batch);
         min.draw(batch);
         raise.draw(batch);
@@ -65,6 +68,10 @@ public class Human extends Player {
         check = new Sprite(new Texture("game/Check.png"));
         check.setSize(150,80);
         check.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
+
+        call = new Sprite(new Texture("game/Call.png"));
+        call.setSize(150,80);
+        call.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
 
         fold = new Sprite(new Texture("game/Fold.png"));
         fold.setSize(150,80);

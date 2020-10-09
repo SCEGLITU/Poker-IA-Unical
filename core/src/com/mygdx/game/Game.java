@@ -33,11 +33,6 @@ import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
 public class Game {
 
     private BitmapFont bitmapFont = new BitmapFont();
-    private Sprite plus;
-    private Sprite min;
-    private Sprite check;
-    private Sprite raise;
-    private Sprite fold;
     Sprite finish;
     private Cursor cursor;
     int winner =-1;
@@ -46,7 +41,7 @@ public class Game {
     private int playerShift = 0;
     private int round = 1;
 
-    private int currentValue = 0;
+    static public int currentValue = 0;
     private int currentPlayerValue = 0;
     private boolean printIn = false;
     private int countFpsToPrint = 0;
@@ -291,25 +286,6 @@ public class Game {
     }
 
     private void initButton() {
-        plus = new Sprite(new Texture("game/Plus.png"));
-        plus.setSize(70,50);
-        plus.setPosition(150,MyGdxGame.WORLD_HEIGHT/2-20);
-
-        min = new Sprite(new Texture("game/Min.png"));
-        min.setSize(70,50);
-        min.setPosition(300,MyGdxGame.WORLD_HEIGHT/2-30);
-
-        check = new Sprite(new Texture("game/Check.png"));
-        check.setSize(150,80);
-        check.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
-
-        fold = new Sprite(new Texture("game/Fold.png"));
-        fold.setSize(150,80);
-        fold.setPosition(600,MyGdxGame.WORLD_HEIGHT/2-30);
-
-        raise = new Sprite(new Texture("game/Raise.png"));
-        raise.setSize(150,80);
-        raise.setPosition(750,MyGdxGame.WORLD_HEIGHT/2-30);
         finish = new Sprite(new Texture("finish.png"));
         finish.setSize(finish.getWidth()-250,finish.getHeight()-20);
         finish.setPosition(0,MyGdxGame.WORLD_HEIGHT/2);
@@ -343,21 +319,13 @@ public class Game {
         //:'D
     }
 
-    /*public void drawButtonToSelect(Batch batch){
-        if(playerShift ==1 && (round==1 ||round==3)){
-            check.draw(batch);
-            fold.draw(batch);
-            min.draw(batch);
-            raise.draw(batch);
-            plus.draw(batch);
-        }
-    }*/
-
     static int g = 0;
 
     public void draw(Batch batch){
+
         for(Player player:players) {
-           player.draw(batch);
+            if(player.isFold()==false)
+                player.draw(batch);
            bitmapFont.draw(batch,"" + player.getName() + "\nm: " + player.getMoney(),
                    player.getUpgradeX(), player.getUpgradeY());
         }
@@ -397,6 +365,7 @@ public class Game {
                 p.setMoney(p.getMoney() - 10);
             blind=true;
         }
+        allFold(batch);
         if(!isRoundFinished){
 
             Player player = players.get(playerShift);
@@ -545,7 +514,11 @@ public class Game {
     }
 
     private void printCheck(int playerShift, Batch batch) {
-        printNotify(playerShift, "CHECK", batch);
+        if (currentValue==0)
+            printNotify(playerShift, "CHECK", batch);
+        else
+            printNotify(playerShift, "CALL", batch);
+
     }
 
     private void printNotify(int playerShift, String s, Batch batch)
@@ -615,6 +588,17 @@ public class Game {
             Carte piu’ alta
          */
 
+    public void allFold(Batch batch){
+        int cont=0;
+        for(Player p: players)
+            if(p.isFold())
+                cont++;
+        if(cont==3){
+            playerShift=3;
+            round=3;
+            increaseRound(batch);
+        }
+    }
     public void dispose(){
         deck.dispose();
     }
