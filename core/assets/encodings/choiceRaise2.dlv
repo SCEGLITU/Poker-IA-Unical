@@ -1,3 +1,13 @@
+possibility(check). possibility(fold). possibility(raise).
+
+%TEST CASE 1:
+%myWallet(4990). plate(40). currentValue(0). betsPointsAvg(15). confidence(8). card("DIAMONDS",13). card("DIAMONDS",9). card("CLUBS",3). card("CLUBS",4). card("SPADES",8). highestCard(13).
+
+%TEST CASE 2:
+%myWallet(4990). plate(40). currentValue(30). betsPointsAvg(15). confidence(8). card("HEARTS",5). card("HEARTS",9). card("DIAMONDS",5). card("SPADES",13). card("DIAMONDS",10). couple(5). highestCoupleCard(5). highestCard(13).
+myWallet(4990). plate(40). currentValue(0). betsPointsAvg(15). confidence(8). card("CLUBS",3). card("DIAMONDS",8). card("SPADES",2). card("CLUBS",1). card("DIAMONDS",11). highestCard(1).
+%TEST CASE 3:
+%myWallet(4990). plate(160). currentValue(120). betsPointsAvg(15). highestCard(12).royalStraight.
 % input
     % highestCard(N), highestCoupleCard(N)
     %SORTED POINT LIST
@@ -11,54 +21,83 @@
     % raise(X)
     % fold
 
-%:-fold ,currentValue(Z), Z=0.
+scelta(X) | notscelta(X) :- possibility(X).
 
-%:-raise(_), check;
-%:-raise(_), fold;
-%:-fold, check;
-%:-check, myWallet(X), currentValue(Z), X<Z.
-%:-raise(X), currentValue(Y), Y>X.
+:- not #count{X: scelta(X)}=1.
+:-scelta(fold) ,currentValue(Z), Z=0.
+
+:-check, myWallet(X), currentValue(Z), X<Z.
+:-raise(X), currentValue(Y), Y>X.
+
 % all fold cases
 %defence
-fold :- myWallet(X), currentValue(Z), X<Z. %fold if player has his budget<current value
-fold :- highestCard(N),N<8, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X<1000, currentValue(Z), Z>20.
-fold :- highestCard(N),N<8, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X<1000, currentValue(Z), Z>20.
-fold :- highestCard(N),N<13, not highestCoupleCard,not highestCoupleCard(N), currentValue(Z), Z>=60.
-fold :- not highestCoupleCard,not highestCoupleCard(N), card(_,N), myWallet(X), X<=1000.
-fold :- couple(N),myWallet(X), X<=700,currentValue(Z), Z>=200.
-fold :- doubleCouple(N),myWallet(X), X<=500,currentValue(Z), Z>=200.
-fold :- tris(N),myWallet(X), X<=600,currentValue(Z), Z>=200.
-%over
-fold :- couple(N), currentValue(Z), Z>=300, myWallet(X), X>2000.
-fold :- doubleCouple(N,N2), currentValue(Z), Z>=400, myWallet(X), X>2000.
-fold :- tris(N), currentValue(Z), Z>=450, myWallet(X), X>2000.
-fold :- straight, currentValue(Z), Z>=500, myWallet(X), X>2000.
-fold :- color, currentValue(Z), Z>=700, myWallet(X), X>2000.
-fold :- full(N,N2), currentValue(Z), Z>=700, myWallet(X), X>2000.
-fold :- poker(N), currentValue(Z), Z>=1400, myWallet(X), X>2000.
+:- notscelta(A), A=fold, myWallet(X), currentValue(Z), X<Z.
+:~ notscelta(A), A=fold, highestCard(N),N<=13, not highestCoupleCard,not highestCoupleCard(N), currentValue(Z), Z>100.[Z@1,A]
+:~ notscelta(A), A=fold, highestCard(N),N<8, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X<1000, currentValue(Z), Z>20.[Z-10@1,A]
+:~ notscelta(A), A=fold, highestCard(N),N<10, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X<2500, currentValue(Z), Z>=60.[Z-10@1,A]
+:~ notscelta(A), A=fold,not highestCoupleCard,not highestCoupleCard(N), card(_,N), myWallet(X), X<=1000.[X-400@1,A]
+:~ notscelta(A), A=fold, couple(N),myWallet(X), X<=700,currentValue(Z), Z>=200.[Z-10@1,A]
+:~ notscelta(A), A=fold, doubleCouple(N),myWallet(X), X<=500,currentValue(Z), Z>=200.[Z-20@1,A]
+:~ notscelta(A), A=fold, tris(N),myWallet(X), X<=600,currentValue(Z), Z>=200.[Z-25@1,A]
+:~ notscelta(A), A=fold, couple(N), currentValue(Z), Z>=300, myWallet(X), X<1500.[Z-30@1,A]
+:~ notscelta(A), A=fold, doubleCouple(N,N2), currentValue(Z), Z>=400, myWallet(X), X<1500.[Z-40@1,A]
+:~ notscelta(A), A=fold, tris(N), currentValue(Z), Z>=450, myWallet(X), X<1500.[Z-40@1,A]
+:~ notscelta(A), A=fold, straight, currentValue(Z), Z>=500, myWallet(X), X<1000.[Z-70@1,A]
+:~ notscelta(A), A=fold, color, currentValue(Z), Z>=1000, myWallet(X), X<2000.[Z-500@1,A]
+:~ notscelta(A), A=fold, full(N,N2), currentValue(Z), Z>=1200, myWallet(X), X<2000.[Z-700@1,A]
 %end fold cases
 
 % all check cases
-check :- highestCard(N),N=1, not highestCoupleCard,not highestCoupleCard(N),currentValue(Z), Z<=20.
-check :- highestCard(N),N<13, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X>2000, currentValue(Z), Z<=60.
-check :- couple(N), currentValue(Z), Z<300, Z>=100.
-check :- doubleCouple(N,N2), currentValue(Z), Z<400, Z>=100.
-check :- tris(N), currentValue(Z), Z<450, Z>=100.
-check :- straight, currentValue(Z), Z<500, Z>=100.
-check :- color, currentValue(Z), Z<700, Z>=200.
-check :- full(N,N2), currentValue(Z), Z<700, Z>=300.
-check :- poker(N), currentValue(Z), Z<1400,Z>=400.
-check :- colorStraight, currentValue(Z), Z>=500.
-check :- royalStraight, currentValue(Z), Z>=500.
+:- scelta(A), A=fold, highestCard(N),N=1, not highestCoupleCard,not highestCoupleCard(N),currentValue(Z), Z<=0.
+:- scelta(A), A=fold,highestCard(N),N<13, not highestCoupleCard,not highestCoupleCard(N), myWallet(X), X>2000, currentValue(Z), Z<=40.
+
+:~ notscelta(A), A=check, highestCard(N),  not highestCoupleCard,not highestCoupleCard(N), currentValue(Z),Z<50.[Z@1,A]
+:~ notscelta(A), A=check, couple(N), currentValue(Z), Z<300, Z>=100.[Z-60@1,A]
+:~ notscelta(A), A=check, doubleCouple(N,N2), currentValue(Z), Z<400, Z>=100.[Z-75@1,A]
+:~ notscelta(A), A=check, tris(N), currentValue(Z), Z<450, Z>=100.[Z-60@1,A]
+:~ notscelta(A), A=check, straight, currentValue(Z), Z<500, Z>=100.[Z-70@1,A]
+:~ notscelta(A), A=check, color, currentValue(Z), Z<700, Z>=200.[Z-80@1,A]
+:~ notscelta(A), A=check, full(N,N2), currentValue(Z), Z<700, Z>=300.[Z-100@1,A]
+:~ notscelta(A), A=check, poker(N), currentValue(Z), Z<1400,Z>=400.[Z-110@1,A]
+:~ notscelta(A), A=check, colorStraight, currentValue(Z), Z>=500.[Z-120@1,A]
+:~ notscelta(A), A=check, royalStraight, currentValue(Z), Z>=500.[Z-150@1,A]
+%---------------------------------------------
+:~ notscelta(A), A=raise, couple(N), currentValue(Z), Z<300, Z>=100.[Z-50@1,A]
+:~ notscelta(A), A=raise, doubleCouple(N,N2), currentValue(Z), Z<400, Z>=100.[Z-55@1,A]
+:~ notscelta(A), A=raise, tris(N), currentValue(Z), Z<450, Z>=100.[Z-60@1,A]
+:~ notscelta(A), A=raise, straight, currentValue(Z), Z<500, Z>=100.[Z-70@1,A]
+:~ notscelta(A), A=raise, color, currentValue(Z), Z<700, Z>=200.[Z-80@1,A]
+:~ notscelta(A), A=raise, full(N,N2), currentValue(Z), Z<700, Z>=300.[Z-90@1,A]
+:~ notscelta(A), A=raise, poker(N), currentValue(Z), Z<1400,Z>=400.[Z-100@1,A]
+:~ notscelta(A), A=raise, colorStraight, currentValue(Z), Z>=500.[Z-110@1,A]
+:~ notscelta(A), A=raise, royalStraight, currentValue(Z), Z>=500.[Z-120@1,A]
+
 %end
 
 %all raise cases
-raise(A) :- couple(N), currentValue(Z), Z<100, A=20+Z.
-raise(A) :- doubleCouple(N),currentValue(Z), Z<100, A=20+Z.
-raise(A) :- tris(N), currentValue(Z), Z<100, A=30+Z.
-raise(A) :- straight, currentValue(Z), Z<100, A=40+Z.
-raise(A) :- color, currentValue(Z), Z<200, A=30+Z.
-raise(A) :- full(N,N2), currentValue(Z), Z<300, A=30+Z.
-raise(A) :- poker(N), currentValue(Z), Z<400, A=30+Z.
-raise(A) :- colorStraight, currentValue(Z), Z<500, A=30+Z.
-raise(A) :- royalStraight, currentValue(Z), Z<500, A=30+Z.
+
+:~ notscelta(A), A=raise, highestCard(N),  not highestCoupleCard,not highestCoupleCard(N), currentValue(Z),Z<50.[Z-10@1,A]
+:~ notscelta(A), A=raise, couple(N), currentValue(Z), Z<100.[50@1,A]
+:~ notscelta(A), A=raise, doubleCouple(N),currentValue(Z), Z<100.[60@1,A]
+:~ notscelta(A), A=raise, tris(N), currentValue(Z), Z<100.[70@1,A]
+:~ notscelta(A), A=raise, straight, currentValue(Z), Z<100.[100@1,A]
+:~ notscelta(A), A=raise, color, currentValue(Z), Z<200.[110@1,A]
+:~ notscelta(A), A=raise, full(N,N2), currentValue(Z), Z<300.[120@1,A]
+:~ notscelta(A), A=raise, poker(N), currentValue(Z), Z<400.[300@1,A]
+:~ notscelta(A), A=raise, colorStraight, currentValue(Z), Z<500.[350@1,A]
+:~ notscelta(A), A=raise, royalStraight, currentValue(Z), Z<500.[400@1,A]
+
+
+raise(B) :- scelta(A), A=raise, couple(N), currentValue(Z), B=20+Z.
+raise(B) :- scelta(A), A=raise, doubleCouple(N),currentValue(Z), B=20+Z.
+raise(B) :- scelta(A), A=raise, tris(N), currentValue(Z), B=30+Z.
+raise(B) :- scelta(A), A=raise, straight, currentValue(Z), B=40+Z.
+raise(B) :- scelta(A), A=raise, color, currentValue(Z), B=30+Z.
+raise(B) :- scelta(A), A=raise, full(N,N2), currentValue(Z), B=40+Z.
+raise(B) :- scelta(A), A=raise, poker(N), currentValue(Z), B=30+Z.
+raise(B) :- scelta(A), A=raise, colorStraight, currentValue(Z), B=40+Z.
+raise(B) :- scelta(A), A=raise, royalStraight, currentValue(Z), B=30+Z.
+check :- scelta(A), A=check.
+fold :- scelta(A), A=fold.
+
+
