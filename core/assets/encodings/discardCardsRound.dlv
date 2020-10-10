@@ -1,1 +1,72 @@
-b(3).
+%TRIS
+%confidence(8).card("HEARTS",7).card("CLUBS",8).card("SPADES",7).
+%card("DIAMONDS",7).card("SPADES",9).tris(7).
+%highestCoupleCard(7).highestCard(13).
+
+%FULL
+%card("HEARTS",7).card("CLUBS",9).card("SPADES",7).
+%card("DIAMONDS",7).card("SPADES",9).full(7,9).
+%highestCoupleCard(7).highestCard(13).
+
+%DOUBLE COUPLE
+%card("HEARTS",7).card("CLUBS",8).card("SPADES",8).
+%card("DIAMONDS",7).card("SPADES",9).doubleCouple(7,8).
+%highestCoupleCard(8).highestCard(13).
+
+%COUPLE
+%card("HEARTS",7).card("CLUBS",8).card("SPADES",8).
+%card("DIAMONDS",1).card("SPADES",9).couple(8).
+%highestCoupleCard(8).highestCard(13).
+
+%possibility(check). possibility(fold). possibility(raise). myWallet(5290). plate(60). currentValue(20). betsPointsAvg(15). confidence(8). card("CLUBS",8). card("HEARTS",13). card("DIAMONDS",2). card("SPADES",3). card("HEARTS",2). couple(2). highestCoupleCard(2). highestCard(13). scelta(raise). notscelta(check). raise(40). notscelta(fold).
+
+
+%COLOR
+%card("HEARTS",7).card("HEARTS",8).card("HEARTS",6).
+%card("HEARTS",1).card("HEARTS",9).color.
+%highestCoupleCard(8).highestCard(13).
+
+%COLOR
+%card("HEARTS",7).card("HEARTS",8).card("HEARTS",6).
+%card("CLUBS",8).card("HEARTS",9).couple(8).
+%highestCoupleCard.highestCard(9).
+
+
+%SORTED POINT LIST
+    % royalStraight, colorStraight, poker(N), full(X, X1), color, straight
+    % tris(N), doubleCouple(N1,N2), couple(N), highestCard(N)
+    %END
+
+keep(S,N) | discard(S,N) :- card(S,N).
+
+:- discard(S,N), full(N,N2).
+:- discard(S,N2), full(N,N2).
+:- discard(S,N), poker(N).
+%IF I UNCOMMENT THIS SOME TESTCASES ANSWERSET BECOME WRONG WTF
+%:- discard(S,N), scelta(fold).
+%:- discard(S,N), straight.
+%:- discard(S,N), colorStraight.
+%:- discard(S,N), royalStraight.
+
+%MISS STRAIGHT
+
+%badBoy(S) :-card(S,N), card(S1,N1), card(S2,N2), card(S3,N3), card(S4,N4), S1=S2, S2=S3, S3=S4, N1!=N2, N2!=N3, N3!=N4, S!=S4.
+
+:~ discard(S,N), royalStraight.[1000@1,S,N]
+:~ discard(S,N), colorStraight.[500@1,S,N]
+:~ discard(S,N), color.[100@1,S,N]
+:~ discard(S,N), straight.[80@1,S,N]
+:~ discard(S,N), couple(N).[30@1,N]
+:~ discard(S,N), doubleCouple(N,N2).[50@1,N]
+:~ discard(S,N2), doubleCouple(N,N2).[50@1,N]
+:~ discard(S,N), tris(N).[40@1,N]
+%:~keep(S,N), card(S,N), not couple(N), not tris(N), not poker(N), badBoy(S).[40@N]
+:~keep(S2,N2), card(S2,N2), tris(N), N2!=N.[60@1,N]
+:~keep(S3,N3), card(S3,N3), doubleCouple(N,N2), N3!=N2,N3!=N.[50@1,N]
+:~keep(S2,N2), card(S2,N2), couple(N), not highestCoupleCard, N2!=N.[30@1,N]
+
+
+
+
+
+

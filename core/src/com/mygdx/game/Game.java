@@ -40,7 +40,8 @@ public class Game {
     int cash=40;
     private int playerShift = 0;
     private int round = 1;
-
+    private ArrayList<ArrayList<String> > oldTurn =
+            new ArrayList<ArrayList<String> >(3);
     static public int currentValue = 0;
     private int currentPlayerValue = 0;
     private boolean printIn = false;
@@ -189,7 +190,7 @@ public class Game {
                         boolean fold = false;
 
                         for(String atom:an.getAnswerSet()) {
-                            System.out.println(atom);
+                    //        System.out.println(atom);
                             matcher=patternRaise.matcher(atom);
 
                             if(matcher.find()){
@@ -205,11 +206,11 @@ public class Game {
 
                         // if there is raise
                         if(raiseSum!=null) {
-                            System.out.println("currentValue = " + currentValue);
+                            //System.out.println("currentValue = " + currentValue);
 
                             if(currentValue < raiseSum) {
 
-                                System.out.println("DLV RAISE. I'll do raise 'cause CURRENT VALUE:"+currentValue+"< "+raiseSum);
+                                //System.out.println("DLV RAISE. I'll do raise 'cause CURRENT VALUE:"+currentValue+"< "+raiseSum);
                                 currentValue = raiseSum;
                                 currentPlayerValue = currentValue;
 
@@ -222,8 +223,8 @@ public class Game {
                             else{
                                 players.get(playerShift).setCurrentChecked(currentValue);
                             }
-                                System.out.println("if there is an error in DLV code and " +
-                                        "I'm trying to raise a raise<currentValue, then check");
+                               // System.out.println("if there is an error in DLV code and " +
+                                     //   "I'm trying to raise a raise<currentValue, then check");
                             //printRaise(currentValue,playerShift,batch);
                         }
                         else if(check){
@@ -235,6 +236,13 @@ public class Game {
                             System.out.println("DLV FOLD");
                         }
                     }
+                    ArrayList<String> a1 = new ArrayList<String>();
+                    for (AnswerSet an : answers.getAnswersets()) {
+                        for (String atom : an.getAnswerSet()) {
+                            a1.add(atom);
+                        }
+                    }
+                    oldTurn.add(a1);
                 }
             }
 
@@ -245,23 +253,51 @@ public class Game {
 
         //discard cards if it's the correct round
         if (round == 2) {
-            ArrayList rmv = new ArrayList();
-            for (AnswerSet a : answers.getAnswersets()) {
-                if (trovato)
-                    break;
-                try {
-                    for (Object obj : a.getAtoms()) {
-                        if (obj instanceof Card) { //We haven't need Card obj but CardToDiscard or something like that (obv objs that DLV want to discard)
-                            rmv.add(obj);
+            encoding = new ASPInputProgram();
+            handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
+
+            encoding.addFilesPath(encodingDiscardCardsRound);
+            facts = new ASPInputProgram();
+
+            ArrayList rmv = new ArrayList<Card>();
+            for(String atom: oldTurn.get(playerShift))
+                facts.addProgram(atom + ".");
+            System.out.println("DISCARD FACTS: "+facts.getPrograms()+"\nEND");
+            handler.addProgram(facts);
+            handler.addProgram(encoding);
+            o = handler.startSync();
+            answers = (AnswerSets) o;
+            Pattern patternRaise=Pattern.compile("discard\\(\"(\\w+)\",(\\d+)\\)");
+            Matcher matcher;
+            if (answers.getAnswersets().size() == 0) {
+                System.out.println("NO ANSWERSET!");
+            }
+            else {
+                for (AnswerSet a : answers.getAnswersets()) {
+                    System.out.println(a);
+                    for (String atom : a.getAnswerSet()) {
+                        matcher = patternRaise.matcher(atom);
+                        String str = "";
+                        Suite s = Suite.DIAMONDS;
+                        if (matcher.find()) {
+                            str = matcher.group(1);
+                            if (str.contains("DIAMONDS"))
+                                s = Suite.DIAMONDS;
+                            else if (str.contains("HEARTS"))
+                                s = Suite.HEARTS;
+                            else if (str.contains("SPADES"))
+                                s = Suite.SPADES;
+                            else if (str.contains("CLUBS"))
+                                s = Suite.CLUBS;
+                            Card card=new Card((s), Integer.parseInt(matcher.group(2)));
+                            System.out.println("ciao "+card);
+                            rmv.add(card);
                         }
                     }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-                break;
-            }
-            //changeCardforPlayer(cpuIndex,rmv); //discard cards here
+
+                changeCardforPlayer(playerShift, rmv);
+            }//changeCardforPlayer(cpuIndex,rmv); //discard cards here
         }
         else{
             //DLV select check raise or fold
@@ -313,7 +349,7 @@ public class Game {
         for (int i = 0; i < cardposition.size(); i++) {
             players.get(cpuindex).removeCard(cardposition.get(i));
         }
-
+        System.out.println("CARTE DOPO SCARTO "+players.get(cpuindex).getCards());
         for(int i=0;i<cardposition.size();i++)
             players.get(cpuindex).addCard(dealer.getCard());
         //:'D
@@ -487,7 +523,7 @@ public class Game {
                     increaseRound(batch);
                 }
                 else if (round == 2) {
-                    //moveByAI(playerShift,batch); //scarta carte
+                    moveByAI(playerShift,batch); //scarta carte
                     increaseRound(batch);
                 }
             }
@@ -560,6 +596,7 @@ public class Game {
                 round=1;
                 blind=false;
                 currentValue=0;
+                oldTurn.clear();
                 setAllCardForAllPlayer();
             }
         }
