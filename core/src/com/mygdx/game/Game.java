@@ -108,6 +108,8 @@ public class Game {
         try {
             for (int i = 0; i < 5; i++) {
                 facts.addObjectInput(new Card(crds.get(i).suite, crds.get(i).number));
+                if(playerShift == 2 && round == 2)
+                    System.out.println("CARTA NEW: " + crds.get(i));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,6 +124,13 @@ public class Game {
             encoding.addFilesPath(encodingNormalRound);
         handler.addProgram(encoding);
 
+        if (round == 2)
+            for(String atom: oldTurn.get(playerShift)) {
+                if (!atom.matches("card.*"))
+                    facts.addProgram(atom + ".");
+                else if (playerShift == 2)
+                    System.out.println("CARTA OLD: " + atom);
+            }
 //        catch output of the program
         Output o = handler.startSync();
         AnswerSets answers = (AnswerSets) o;
@@ -130,13 +139,7 @@ public class Game {
         if (answers.getAnswersets().size() == 0) {
             throw new RuntimeException("NO ANSWERSET!");
         }
-        else
-        {
-
-            System.out.println("Player: "+ cpuIndex);
-            //System.out.println("NORMALROUND FACTS: "+facts.getPrograms());
-
-            if(round!=2){
+        else if(round!=2){
 
                 // to value the next move, there is another ASP program called "choiceRaise.dlv"
 
@@ -147,9 +150,6 @@ public class Game {
                 encoding.addFilesPath(encodingChoiseRaise);
 
                 facts = new ASPInputProgram();
-
-
-
 
                 facts.addProgram("myWallet("+ players.get(cpuIndex).getMoney()+").");
                 int plate=0;
@@ -241,32 +241,28 @@ public class Game {
                         for (String atom : an.getAnswerSet()) {
                             a1.add(atom);
                         }
+                        System.out.println("Player: " + playerShift);
+                        System.out.println("an = " + an);
                     }
+
                     oldTurn.add(a1);
                 }
             }
-
-
-        }
-
-        boolean trovato = false;
-
-        //discard cards if it's the correct round
-        if (round == 2) {
-            encoding = new ASPInputProgram();
-            handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
-
-            encoding.addFilesPath(encodingDiscardCardsRound);
-            facts = new ASPInputProgram();
-
+        //discard cards ROUND 2
+        else {
+//            encoding = new ASPInputProgram();
+//            handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
+//
+//            encoding.addFilesPath(encodingDiscardCardsRound);
+//            facts = new ASPInputProgram();
             ArrayList rmv = new ArrayList<Card>();
-            for(String atom: oldTurn.get(playerShift))
-                facts.addProgram(atom + ".");
-            System.out.println("DISCARD FACTS: "+facts.getPrograms()+"\nEND");
-            handler.addProgram(facts);
-            handler.addProgram(encoding);
-            o = handler.startSync();
-            answers = (AnswerSets) o;
+//            for(String atom: oldTurn.get(playerShift))
+//                facts.addProgram(atom + ".");
+//            System.out.println("DISCARD FACTS: "+facts.getPrograms()+"\nEND");
+//            handler.addProgram(facts);
+//            handler.addProgram(encoding);
+//            o = handler.startSync();
+//            answers = (AnswerSets) o;
             Pattern patternRaise=Pattern.compile("discard\\(\"(\\w+)\",(\\d+)\\)");
             Matcher matcher;
             if (answers.getAnswersets().size() == 0) {
@@ -274,7 +270,6 @@ public class Game {
             }
             else {
                 for (AnswerSet a : answers.getAnswersets()) {
-                    System.out.println(a);
                     for (String atom : a.getAnswerSet()) {
                         matcher = patternRaise.matcher(atom);
                         String str = "";
@@ -290,7 +285,8 @@ public class Game {
                             else if (str.contains("CLUBS"))
                                 s = Suite.CLUBS;
                             Card card=new Card((s), Integer.parseInt(matcher.group(2)));
-                            System.out.println("ciao "+card);
+                            if(playerShift == 2)
+                                System.out.println("ciao "+card);
                             rmv.add(card);
                         }
                     }
@@ -299,9 +295,9 @@ public class Game {
                 changeCardforPlayer(playerShift, rmv);
             }//changeCardforPlayer(cpuIndex,rmv); //discard cards here
         }
-        else{
-            //DLV select check raise or fold
-        }
+//        else{
+//            //DLV select check raise or fold
+//        }
     }
 
     public void createPlayers()
@@ -347,9 +343,9 @@ public class Game {
 
     public void changeCardforPlayer(int cpuindex, ArrayList<Card> cardposition){
         for (int i = 0; i < cardposition.size(); i++) {
-            players.get(cpuindex).removeCard(cardposition.get(i));
+            if(!players.get(cpuindex).removeCard(cardposition.get(i)))
+                throw new RuntimeException("Remove a no-held card " + cpuindex);
         }
-        System.out.println("CARTE DOPO SCARTO "+players.get(cpuindex).getCards());
         for(int i=0;i<cardposition.size();i++)
             players.get(cpuindex).addCard(dealer.getCard());
         //:'D
@@ -379,11 +375,11 @@ public class Game {
            }
         }
 
-        try {
-            Thread.sleep((long)(1000/fps-Gdx.graphics.getDeltaTime()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep((long)(1000/fps-Gdx.graphics.getDeltaTime()));
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         if(printIn) {
             fps = 2;

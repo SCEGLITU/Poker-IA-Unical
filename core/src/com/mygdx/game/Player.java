@@ -131,9 +131,9 @@ public abstract class Player {
         return cards.get(i);
     }
 
-    public void removeCard(Card card)
+    public boolean removeCard(Card card)
     {
-        cards.remove(card);
+        return cards.remove(card);
     }
 
     public void reset()
