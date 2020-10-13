@@ -1,7 +1,9 @@
-package com.mygdx.game;
+package com.mygdx.game.logic;
+
+import com.mygdx.game.logic.card.Card;
+import com.mygdx.game.logic.player.Player;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 

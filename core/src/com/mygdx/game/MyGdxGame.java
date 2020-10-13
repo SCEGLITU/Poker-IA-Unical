@@ -3,14 +3,10 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import java.util.ArrayList;
-import it.unical.mat.embasp.base.Handler;
-import it.unical.mat.embasp.platforms.desktop.DesktopHandler;
-import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
-import sun.security.krb5.internal.crypto.Des;
+
+import com.mygdx.game.control.Game;
+import com.mygdx.game.graphicsGDX.PrinterGDX;
 
 public class MyGdxGame extends ApplicationAdapter {
 
@@ -23,6 +19,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	SpriteBatch batch;
 	Game game;
+	PrinterGDX printerGDX;
 
 	@Override
 	public void create () {

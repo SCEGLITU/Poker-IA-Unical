@@ -1,4 +1,4 @@
-package com.mygdx.game;
+package com.mygdx.game.logic.card;
 
 import it.unical.mat.embasp.languages.Id;
 import it.unical.mat.embasp.languages.Param;
@@ -7,10 +7,10 @@ import it.unical.mat.embasp.languages.Param;
 public class Card {
 
     @Param(0)
-    protected Suite suite;
+    public Suite suite;
 
     @Param(1)
-    protected int number;
+    public int number;
 
     public Card() {
     }

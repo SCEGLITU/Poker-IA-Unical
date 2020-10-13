@@ -1,8 +1,9 @@
-package com.mygdx.game;
+package com.mygdx.game.logic.player;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
-
-import java.util.ArrayList;
+import com.mygdx.game.graphicsGDX.card.Deck;
+import com.mygdx.game.graphicsGDX.player.PlayerDirection;
+import com.mygdx.game.logic.card.Card;
 
 public class Enemy extends Player {
 
@@ -17,7 +18,7 @@ public class Enemy extends Player {
     @Override
     public void drawCards(Batch batch) {
         for(Card card:cards)
-            Deck.getIstance().getCard(card).draw(batch);
+            Deck.getInstance().getCard(card).draw(batch);
     }
 
     @Override

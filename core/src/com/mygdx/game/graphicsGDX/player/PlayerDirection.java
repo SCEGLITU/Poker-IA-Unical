@@ -1,4 +1,4 @@
-package com.mygdx.game;
+package com.mygdx.game.graphicsGDX.player;
 
 public enum PlayerDirection{UP_PLAYER(0), LEFT_PLAYER(1), RIGHT_PLAYER(2), DOWN_PLAYER(3);
     int value = 5;
@@ -6,10 +6,12 @@ public enum PlayerDirection{UP_PLAYER(0), LEFT_PLAYER(1), RIGHT_PLAYER(2), DOWN_
     {
         this.value = i;
     }
+
     public int getValue()
     {
         return value;
     }
+
     public static PlayerDirection getPlayerDirection(int i)
     {
         switch (i)

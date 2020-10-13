@@ -1,8 +1,11 @@
-package com.mygdx.game;
+package com.mygdx.game.graphicsGDX.card;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.mygdx.game.MyGdxGame;
+import com.mygdx.game.logic.card.Card;
+import com.mygdx.game.logic.card.Suite;
 
 import java.util.ArrayList;
 
@@ -29,16 +32,16 @@ public class Deck {
         carte.clear();
     }
 
-    protected static Deck deck = null;
+//    protected static Deck deck = null;
+//
+//    public static Deck getInstance()
+//    {
+//        if(deck == null)
+//            deck = new Deck();
+//        return deck;
+//    }
 
-    public static Deck getIstance()
-    {
-        if(deck == null)
-            deck = new Deck();
-        return deck;
-    }
-
-    private Deck() {
+    public Deck() {
         carte = new ArrayList<>();
         carte.add(new Sprite(new Texture(Gdx.files.internal("cards/ace_of_diamonds.png"))));
         for(int i=2;i<11;i++)

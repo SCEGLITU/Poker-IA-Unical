@@ -1,9 +1,10 @@
-package com.mygdx.game;
+package com.mygdx.game.graphicsGDX;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
+import com.mygdx.game.InputTransform;
 
 public class Cursor {
 
