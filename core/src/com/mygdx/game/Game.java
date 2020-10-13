@@ -41,7 +41,7 @@ public class Game {
     private int playerShift = 0;
     private int round = 1;
     private ArrayList<ArrayList<String> > oldTurn =
-            new ArrayList<ArrayList<String> >(3);
+            new ArrayList<ArrayList<String> >();
     static public int currentValue = 0;
     private int currentPlayerValue = 0;
     private boolean printIn = false;
@@ -78,6 +78,8 @@ public class Game {
         setAllCardForAllPlayer();
         setPathResources();
         evaluator = new Evaluator(players);
+
+        oldTurn.add(null);oldTurn.add(null);oldTurn.add(null);
     }
 
     private void setPathResources()
@@ -100,6 +102,9 @@ public class Game {
 
     public void moveByAI(int cpuIndex,Batch batch) {
 
+        if (playerShift == -1)
+            return;
+
         handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
 
 //        add facts to program
@@ -108,8 +113,6 @@ public class Game {
         try {
             for (int i = 0; i < 5; i++) {
                 facts.addObjectInput(new Card(crds.get(i).suite, crds.get(i).number));
-                if(playerShift == 2 && round == 2)
-                    System.out.println("CARTA NEW: " + crds.get(i));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,10 +129,7 @@ public class Game {
 
         if (round == 2)
             for(String atom: oldTurn.get(playerShift)) {
-                if (!atom.matches("card.*"))
                     facts.addProgram(atom + ".");
-                else if (playerShift == 2)
-                    System.out.println("CARTA OLD: " + atom);
             }
 //        catch output of the program
         Output o = handler.startSync();
@@ -217,22 +217,26 @@ public class Game {
                                 players.get(playerShift).setCurrentChecked(currentValue);
 
 
-                                if (playerShift != 0)
+                                if (playerShift != 0){
                                     playerShift = -1;
+                                    return;
+                                }
                             }
                             else{
                                 players.get(playerShift).setCurrentChecked(currentValue);
                             }
                                // System.out.println("if there is an error in DLV code and " +
                                      //   "I'm trying to raise a raise<currentValue, then check");
-                            //printRaise(currentValue,playerShift,batch);
+                            printRaise(currentValue,playerShift,batch);
                         }
                         else if(check){
                             players.get(playerShift).setCurrentChecked(currentValue);
+                            printCheck(playerShift, batch);
                             System.out.println("DLV CHECK");
                         }
                         else if(fold){
                             players.get(playerShift).setFold(true);
+                            printFold(playerShift, batch);
                             System.out.println("DLV FOLD");
                         }
                     }
@@ -240,12 +244,15 @@ public class Game {
                     for (AnswerSet an : answers.getAnswersets()) {
                         for (String atom : an.getAnswerSet()) {
                             a1.add(atom);
+                            if(atom.matches("card*") && playerShift == 2)
+                                System.out.println("CARTE OLD 2: " + atom);
                         }
-                        System.out.println("Player: " + playerShift);
-                        System.out.println("an = " + an);
                     }
 
-                    oldTurn.add(a1);
+                    System.out.println("size: " + oldTurn.size());
+                    System.out.println("playerShift = " + playerShift);
+
+                    oldTurn.set(playerShift,a1);
                 }
             }
         //discard cards ROUND 2
@@ -293,6 +300,7 @@ public class Game {
                 }
 
                 changeCardforPlayer(playerShift, rmv);
+                printChangeCard(rmv.size(), playerShift, batch);
             }//changeCardforPlayer(cpuIndex,rmv); //discard cards here
         }
 //        else{
@@ -375,11 +383,12 @@ public class Game {
            }
         }
 
-//        try {
-//            Thread.sleep((long)(1000/fps-Gdx.graphics.getDeltaTime()));
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            long x = (long)(1000/fps-Gdx.graphics.getDeltaTime());
+            Thread.sleep(x>0?x:2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         if(printIn) {
             fps = 2;
@@ -509,6 +518,7 @@ public class Game {
                     }
                     if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
                         changeCardforPlayer(playerShift,rmve);
+                        printChangeCard(rmve.size(), playerShift, batch);
                         System.out.println("removed all selected cards");
                         rmve.clear();
                         increaseRound(batch);
@@ -537,6 +547,10 @@ public class Game {
             }
     }
 
+    private void printChangeCard(int ncards, int playerShift, Batch batch) {
+        printNotify(playerShift, "CHANGE " + ncards + " CARDS", batch);
+    }
+
     private void printRaise(int currentValue, int playerShift, Batch batch) {
        printNotify(playerShift, "RAISE " + currentValue, batch);
     }
@@ -550,7 +564,6 @@ public class Game {
             printNotify(playerShift, "CHECK", batch);
         else
             printNotify(playerShift, "CALL", batch);
-
     }
 
     private void printNotify(int playerShift, String s, Batch batch)
@@ -592,7 +605,7 @@ public class Game {
                 round=1;
                 blind=false;
                 currentValue=0;
-                oldTurn.clear();
+//                oldTurn.clear();
                 setAllCardForAllPlayer();
             }
         }
