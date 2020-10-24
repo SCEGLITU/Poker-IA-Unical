@@ -20,6 +20,47 @@ import java.util.ArrayList;
     input player e deck
 
     print player
+
+//                    if (listener.right() || listener.left()) {
+//                        int count = 0;
+//                        int sizeCards = player.getCards().size();
+//                        boolean setFirstPos = true;
+//                        for (Card card : player.getCards()) {
+//                            Sprite cardSprite = deck.getCard(card);
+//                            if (cursor.intersectSprite(cardSprite)) {
+//                                if (listener.right())
+//                                    count++;
+//                                else
+//                                    count--;
+//
+//                                if (count == -1) {
+//                                    count = sizeCards - 1;
+//                                }
+//                                cursor.setX(deck.getCard(player.getCard((count) % sizeCards)).getX() + 5);
+//                                cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT -
+//                                        deck.getCard(player.getCard((count) % sizeCards)).getY() + 5);
+//                                setFirstPos = false;
+//                                break;
+//                            }
+//                            count++;
+//                        }
+//
+//                        if (setFirstPos) {
+//                            cursor.setX(deck.getCard(player.getCard(0)).getX() + 5);
+//                            cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT -
+//                                    (deck.getCard(player.getCard(0)).getY()) + 5);
+//                        }
+//                        useKeyboard = true;
+//                    }
+//                    for(Card card: player.getCards())
+//                    {
+//                        Rectangle rectangleCard = Deck.getInstance().getCard(card).getBoundingRectangle();
+//                        if(rectangleCard.contains(cursor.getX(), cursor.getY()))
+//                            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && (!(rmve.contains(card)))) {
+//                                rmve.add(card);
+//                                System.out.println("remove this card");
+//                            }
+//                    }
  */
 
 
@@ -88,12 +129,11 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
 
     public boolean drawRound(boolean isRoundFinished)
     {
-        if(isRoundFinished) {
-            printFinish();
-            if(pressedEnter()){
-                isRoundFinished=false;
-            }
+
+        if(pressedEnter()){
+            isRoundFinished=false;
         }
+
 
         try {
             long x = (long)(1000/fps-Gdx.graphics.getDeltaTime());
@@ -140,6 +180,10 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
     public boolean pressedEnter()
     {
         return Gdx.input.isKeyJustPressed(Input.Keys.ENTER);
+    }
+
+    public void dispose(){
+        deck.dispose();
     }
 
 }

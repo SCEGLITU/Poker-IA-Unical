@@ -1,6 +1,6 @@
 package com.mygdx.game.logic.player;
 
-import com.badlogic.gdx.graphics.g2d.Batch;
+import com.mygdx.game.logic.LogicGame;
 import com.mygdx.game.logic.card.Card;
 
 import java.util.ArrayList;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public abstract class Player {
     protected String name;
     protected ArrayList<Card> cards;
+    protected ArrayList<Card> rmv;
     protected int money;
     protected int currentChecked=0;
 
@@ -18,37 +19,67 @@ public abstract class Player {
 
     public boolean shift = true;
 
-    public Player() {
-        this.name = "SONY";
-        this.money = 5000;
-        this.fold = false;
-        this.cards = new ArrayList<Card>();
-    }
-
-    public Player(String name, int money) {
+    public Player(String name, int money, OnActionListerner listener) {
         this.name = name;
         this.money = money;
         this.fold = false;
         this.cards = new ArrayList<Card>();
+        this.onActionListerner = listener;
     }
 
-    public void newRound()
-    {
-        check = false;
-        raise = false;
+    public abstract void moveChoice         (int currentPlayerValue, int currentValue);
+    public abstract void removeCardChoice   (int currentPlayerValue, int currentValue);
+
+
+    public void changeCards(){
+        for (int i = 0; i < rmv.size(); i++) {
+            if(!removeCard(rmv.get(i)))
+                throw new RuntimeException("Remove a no-held card " + name);
+        }
+
+        onActionListerner.changeCard(rmv.size());
+        rmv.clear();
+//        for(int i=0;i<cardposition.size();i++)
+//            players.get(cpuindex).addCard(dealer.getCard());
+        //:'D
+    }
+
+    public void newRound(){
+        check = raise = false;
+    }
+
+    public void newGame() {
+        newRound();
+        fold = false;
+    }
+
+    public void call(){
+        check = true;
+        if(onActionListerner != null){
+            onActionListerner.checkPerform();
+        }
     }
 
     public void check() {
         check = true;
+        if(onActionListerner != null){
+            onActionListerner.checkPerform();
+        }
     }
 
     public void fold() {
         fold = true;
+        if(onActionListerner != null){
+            onActionListerner.foldPerform();
+        }
     }
 
     public void raise(int money) {
         raise = true;
         this.money -= money;
+        if(onActionListerner != null){
+            onActionListerner.raisePerform(money);
+        }
     }
 
     public void addCard(Card c)
@@ -118,26 +149,18 @@ public abstract class Player {
 
     public void setCurrentChecked(int currentChecked) {this.currentChecked = currentChecked; }
 
-//    public void draw(Batch batch)
-//    {
-//        setCardPositionToDraw();
-//        drawCards(batch);
-//    }
-//
-    public abstract void drawCards(Batch batch);
-//
-//    public void setCardPositionToDraw(){
-//        int x=startXCard;
-//        int y=startYCard;
-//        for(Card card: cards) {
-//            Deck.getInstance().setCardPosition(card.getNumber(), card.getSuite(), x, y);
-//            if(direction == LEFT_PLAYER || direction == RIGHT_PLAYER)
-//                y += MyGdxGame.CARD_WIDTH + 30;
-//            else
-//                x += MyGdxGame.CARD_WIDTH + 30;
-//        }
-//
-//    }
+    private OnActionListerner onActionListerner;
 
-    public abstract void drawKeybord(Batch batch);
+    public void setOnActionListerner(OnActionListerner onActionListerner){
+        this.onActionListerner = onActionListerner;
+    }
+
+    public interface OnActionListerner{
+        void checkPerform   ();
+        void callPerform    ();
+        void raisePerform   (int money);
+        void foldPerform    ();
+
+        void changeCard     (int sizeRmv);
+    }
 }

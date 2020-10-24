@@ -9,39 +9,6 @@ import java.util.Map;
 
 public class Evaluator {
 
-    /*
-        se la carta è la più alta fai il test di scala
-        0. CARTA PIU' ALTA
-            prendere la carta più alta del mazzo
-        1. TEST SCALA
-            verificare scala di 5 e carta più alta*
-            se trovo scala e c'e' gia' seme STOP
-        2. STESSO SEME
-            contare 5 carte con lo stesso seme
-            se trovo seme e c'è gia' scala STOP
-        3. CARTE UGUALI DOPPIE - se c'è scala stop
-            contare carte con stesso valore e conservare la più alta
-
-
-     */
-
-    // 10 s:  Scala reale 10 - 11 - 12 - 13 - 1 dello stesso seme
-
-    // 9 s:  Scala Colore (5 carte consecutive dello stesso seme)
-
-    // 8 v:  Poker (4 carte dello stesso valore)
-
-    // 7 s:  Colore (5 carte con lo stesso seme)
-
-    // 6 v:  Full (3 carte dello stesso valore + 2 carte dello stesso valore)
-
-    // 5 s:  Scala (5 carte consecutive con semi differenti)
-
-    // 4 v:  Tris (3 carte dello stesso valore)
-    // 3 v:  Doppia coppia (2 carte dello stesso valore + altre 2 carte dello stesso valore)
-    // 2 v:  Coppia (2 carte dello stesso valore)
-    // 1 hc: Carte piu’ alta
-
     protected ArrayList<Player> players;
     // map < number card, rank >
     protected Map<Integer, Integer> cardRanks = new HashMap<>();
@@ -70,7 +37,7 @@ public class Evaluator {
         this.players = players;
     }
 
-    public int valueCards() {
+    public int getWinner() {
 
         int indexWinner = -1;
 

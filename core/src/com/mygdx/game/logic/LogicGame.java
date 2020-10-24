@@ -1,13 +1,6 @@
 package com.mygdx.game.logic;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.Rectangle;
-import com.mygdx.game.MyGdxGame;
-import com.mygdx.game.graphicsGDX.card.Deck;
-import com.mygdx.game.graphicsGDX.player.PlayerDirection;
+import com.mygdx.game.control.Game;
 import com.mygdx.game.logic.card.Card;
 import com.mygdx.game.logic.card.Dealer;
 import com.mygdx.game.logic.player.Enemy;
@@ -18,6 +11,44 @@ import it.unical.mat.embasp.base.Handler;
 import java.util.ArrayList;
 
 public class LogicGame {
+
+    private PokerListener listener;
+
+    public void setPokerListener(PokerListener listener) {
+        this.listener = listener;
+    }
+
+    public interface PokerListener {
+
+        void raise(Player player, int v);
+        void check(Player player);
+        void call(Player player);
+        void fold(Player player);
+        void changeCard(Player player, int numberOfRMVCard);
+
+        // bitmapFont.draw(batch, ""+currentPlayerValue, 250, MyGdxGame.WORLD_HEIGHT/2f+15);
+        //                    player.drawKeybord(batch);
+        void printKeyboard(Human human, int currentValue);
+
+        //cursor.intersectSprite(((Human) player).plus)
+        boolean humanCheck();
+        boolean humanCall();
+        boolean humanRaise();
+        boolean humanFold();
+        boolean humanPlus();
+        boolean humanMinus();
+
+        void finishRound();
+
+        // Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)
+        boolean right();
+        boolean left();
+
+        Card removeCard(Player human);
+        boolean endRemoveCard(Human human);
+
+        void updatePlayer(Player player);
+    }
 
     int winner =-1;
     boolean blind=false;
@@ -39,183 +70,71 @@ public class LogicGame {
     static public Dealer dealer;
     private ArrayList<Player> players;
 
-    private boolean isRoundFinished = false;
+
     private ArrayList<Card> rmve;
 
     private static Handler handler;
     private Evaluator evaluator;
 
-    public LogicGame()
+    private Game game;
+
+    public LogicGame(Game game)
     {
+        this.game = game;
         this.dealer = new Dealer();
         this.players = new ArrayList<>();
         this.rmve = new ArrayList<>();
         this.evaluator = new Evaluator(players);
         createPlayers();
         setAllCardForAllPlayer();
-        oldTurn.add(null);oldTurn.add(null);oldTurn.add(null);
+
+        oldTurn.add(null);
+        oldTurn.add(null);
+        oldTurn.add(null);
     }
 
     public void gameCicle(){
 
-        boolean useKeyboard = false;
+        allFold();
+
         if(!blind) {
             for (Player p : players)
                 p.setMoney(p.getMoney() - 10);
             blind=true;
         }
-        allFold(batch);
-        if(!isRoundFinished){
+        if(!game.isRoundFinished()){
 
             Player player = players.get(playerShift);
 
             // if the player hasn't folded and the current checked sum is less than the current value of the plate
             if(!player.isFold()) {
-
                 // if it's in the round where the player can raise the sum
-                if ((round == 1 || round == 3) && player instanceof Human) {
-                    bitmapFont.draw(batch, ""+currentPlayerValue, 250, MyGdxGame.WORLD_HEIGHT/2f+15);
-                    player.drawKeybord(batch);
-
-                    // mouse pressing input
-
-
-                    // press plus
-                    if (cursor.intersectSprite(((Human) player).plus)) {
-                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                            currentPlayerValue += 10;
-                            System.out.println(currentPlayerValue); //get current raise value
-                        }
-                    }
-
-                    // press min
-                    if (cursor.intersectSprite(((Human) player).min)) {
-                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                            if (currentPlayerValue > currentValue)
-                                currentPlayerValue -= 10;
-                            System.out.println(currentPlayerValue); // get current raise value
-                        }
-                    }
-
-                    // press fold
-                    if (cursor.intersectSprite(((Human) player).fold)) {
-                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                            player.setFold(true);
-                            printFold(playerShift, batch);
-                            System.out.println(player.isFold()); // set fold true
-                        }
-                    }
-
-                    // press check
-                    if (cursor.intersectSprite(((Human) player).check)) {
-                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                            if(player.getCurrentChecked() < currentValue){
-                                player.setCurrentChecked(currentValue);
-                                currentPlayerValue=currentValue;
-                                System.out.println(currentValue); //get current check value
-                            }
-                            printCheck(playerShift, batch);
-                            increaseRound(batch);
-                        }
-                    }
-                    // press raise
-                    else if (cursor.intersectSprite(((Human) player).raise)) {
-                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && currentPlayerValue >currentValue) {
-                            currentValue = currentPlayerValue;
-                            player.setCurrentChecked(currentPlayerValue);
-                            System.out.println(currentValue); //get current check value
-                            printRaise(currentValue, playerShift, batch);
-                            if(playerShift==0)
-                                increaseRound(batch);
-                            else
-                                playerShift=0;
-                        }
-                    }
+                if (round == 1 || round == 3) {
+                    player.moveChoice(currentPlayerValue, currentValue);
                     //END
                 }
-                else if (round == 2 && player instanceof Human) {
-                    if ((Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT))) {
-                        int count = 0;
-                        int sizeCards = player.getCards().size();
-                        boolean setFirstPos = true;
-                        for (Card card : player.getCards()) {
-                            Sprite cardSprite = deck.getCard(card);
-                            if (cursor.intersectSprite(cardSprite)) {
-                                if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT))
-                                    count++;
-                                else
-                                    count--;
-
-                                if (count == -1) {
-                                    count = sizeCards - 1;
-                                }
-                                cursor.setX(deck.getCard(player.getCard((count) % sizeCards)).getX() + 5);
-                                cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT -
-                                        deck.getCard(player.getCard((count) % sizeCards)).getY() + 5);
-                                setFirstPos = false;
-                                break;
-                            }
-                            count++;
-                        }
-
-                        if (setFirstPos) {
-                            cursor.setX(deck.getCard(player.getCard(0)).getX() + 5);
-                            cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT -
-                                    (deck.getCard(player.getCard(0)).getY()) + 5);
-                        }
-                        useKeyboard = true;
-                    }
-                    for(Card card: player.getCards())
-                    {
-                        Rectangle rectangleCard = Deck.getInstance().getCard(card).getBoundingRectangle();
-                        if(rectangleCard.contains(cursor.getX(), cursor.getY()))
-                            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && (!(rmve.contains(card)))) {
-                                rmve.add(card);
-                                System.out.println("remove this card");
-                            }
-                    }
-                    if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-                        changeCardforPlayer(playerShift,rmve);
-                        printChangeCard(rmve.size(), playerShift, batch);
-                        System.out.println("removed all selected cards");
-                        rmve.clear();
-                        increaseRound(batch);
-                    }
-                }
-                else if (round == 1 || round == 3) {
-                    moveByAI(playerShift,batch); //decidere check fold o raise
-                    increaseRound(batch);
-                }
                 else if (round == 2) {
-                    moveByAI(playerShift,batch); //scarta carte
-                    increaseRound(batch);
-                }
+                        player.removeCardChoice(currentPlayerValue, currentValue);
+                    }
             }
             else{
-                increaseRound(batch);
+                increaseRound();
             }
         }
-        if(!useKeyboard && cursor.isChangedPosition())
-            for(Card card:players.get(DOWN_PLAYER).getCards())
-            {
-                Rectangle rectangleCard = Deck.getInstance().getCard(card).getBoundingRectangle();
-                //if(rectangleCard.contains(cursor.getX(), cursor.getY()))
-                //System.out.println("Carta giocatore in basso: " + card.getSuite() + " " + card.getNumber());
-
-            }
     }
 
     public void createPlayers()
     {
-        players.add(new Enemy(PlayerDirection.getPlayerDirection(LEFT_PLAYER)));
-        players.add(new Enemy(PlayerDirection.getPlayerDirection(UP_PLAYER)));
-        players.add(new Enemy(PlayerDirection.getPlayerDirection(RIGHT_PLAYER)));
+        players.add(new Enemy("LEFT_PLAYER", 4000, new PlayerListener()));
+        players.add(new Enemy("UP_PLAYER", 4000, new PlayerListener()));
+        players.add(new Enemy("RIGHT_PLAYER", 4000, new PlayerListener()));
 
         for(int i=0; i<3; i++){
             players.get(i).setName("ENEMY-" + i);
         }
 
-        players.add(new Human(PlayerDirection.getPlayerDirection(NUM_OF_PLAYERS - 1)));
+        players.add(new Human("SONY", 4000,
+                new PlayerListener(), new HumanListener()));
     }
 
     public void setAllCardForAllPlayer(){
@@ -228,25 +147,12 @@ public class LogicGame {
         }
     }
 
-    public void changeCardforPlayer(int cpuindex, ArrayList<Card> cardposition){
-        for (int i = 0; i < cardposition.size(); i++) {
-            if(!players.get(cpuindex).removeCard(cardposition.get(i)))
-                throw new RuntimeException("Remove a no-held card " + cpuindex);
-        }
-        for(int i=0;i<cardposition.size();i++)
-            players.get(cpuindex).addCard(dealer.getCard());
-        //:'D
-    }
-
-    public boolean isRoundFinished() {
-        return isRoundFinished;
-    }
 
     public ArrayList<Player> getPlayers() {
         return players;
     }
 
-    public void increaseRound(Batch batch){
+    public void increaseRound(){
         System.out.println(playerShift+" --ROUND--> "+round);
         playerShift++;
         currentPlayerValue=currentValue;
@@ -265,22 +171,169 @@ public class LogicGame {
             round++;
             if(round==4){
 
-                win(batch);
-                players.get(winner).setMoney(players.get(winner).getMoney()+cash);
+
+                players.get(winner).setMoney(
+                        players.get(evaluator.getWinner()).getMoney()
+                                + cash);
                 for(Player p:players){
                     p.setCurrentChecked(0);
                     p.setFold(false);
                 }
-                isRoundFinished = true;
+                listener.finishRound();
                 dealer.shuffle();
                 cash=40;
                 playerShift=0;
                 round=1;
                 blind=false;
                 currentValue=0;
-//                oldTurn.clear();
                 setAllCardForAllPlayer();
             }
+        }
+    }
+
+
+    public void allFold(){
+        int cont=0;
+        for(Player p: players)
+            if(p.isFold())
+                cont++;
+        if(cont==3){
+            playerShift=3;
+            round=3;
+            increaseRound();
+        }
+    }
+
+
+    public class PlayerListener implements Player.OnActionListerner {
+
+        private Player player;
+
+        private void setPlayer(){
+            if(this.player == null)
+                this.player = players.get(playerShift);
+        }
+
+        @Override
+        public void checkPerform() {
+            setPlayer();
+            if(listener != null)
+                listener.check(player);
+            increaseRound();
+        }
+
+        @Override
+        public void callPerform() {
+            setPlayer();
+            if(listener != null)
+                listener.call(player);
+            increaseRound();
+        }
+
+        @Override
+        public void raisePerform(int money) {
+            setPlayer();
+            if(listener != null)
+                listener.raise(player, money);
+            increaseRound();
+        }
+
+        @Override
+        public void foldPerform() {
+            setPlayer();
+            if(listener != null)
+                listener.check(player);
+            increaseRound();
+        }
+
+        @Override
+        public void changeCard(int sizeRmv) {
+            setPlayer();
+            if(listener != null)
+                listener.raise(player, sizeRmv);
+            increaseRound();
+        }
+    }
+
+    public class HumanListener implements Human.OnHumanListener{
+
+        private Human human;
+
+        public HumanListener() {
+            if(players.get(playerShift) instanceof Human)
+                this.human = (Human) players.get(playerShift);
+            else
+                throw new RuntimeException("Error to init HumanListener");
+        }
+
+        @Override
+        public boolean humanCheck() {
+            if(listener != null)
+                return listener.humanCheck();
+            return false;
+        }
+
+        @Override
+        public boolean humanCall() {
+            if(listener != null)
+                return listener.humanCall();
+            return false;
+        }
+
+        @Override
+        public boolean humanRaise() {
+            if(listener != null)
+                return listener.humanRaise();
+            return false;
+        }
+
+        @Override
+        public boolean humanFold() {
+            if(listener != null)
+                return listener.humanFold();
+            return false;
+        }
+
+        @Override
+        public boolean humanPlus() {
+            if(listener != null)
+                return listener.humanPlus();
+            return false;
+        }
+
+        @Override
+        public boolean humanMinus() {
+            if(listener != null)
+                return listener.humanMinus();
+            return false;
+        }
+
+        @Override
+        public boolean left() {
+            if(listener != null)
+                return listener.left();
+            return false;
+        }
+
+        @Override
+        public boolean right() {
+            if(listener != null)
+                return listener.right();
+            return false;
+        }
+
+        @Override
+        public Card removeCard() {
+            if(listener != null)
+                return listener.removeCard(human);
+            return null;
+        }
+
+        @Override
+        public boolean endRemoveCard() {
+            if(listener != null)
+                return listener.endRemoveCard(human);
+            return false;
         }
     }
 }
