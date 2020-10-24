@@ -31,12 +31,12 @@ public class EnemyAI extends Player {
 
     @Override
     public void moveChoice(int currentPlayerValue, int currentValue) {
-
+        dlvManager.doAnAIChoise(currentPlayerValue, currentValue);
     }
 
     @Override
     public void removeCardChoice(int currentPlayerValue, int currentValue) {
-
+        dlvManager.doAnAICardRemove(currentPlayerValue, currentValue);
     }
 
     private class DLVManager {
@@ -47,11 +47,13 @@ public class EnemyAI extends Player {
         private String encodingDiscardCardsRound;
         private String pathDlv;
 
+        private ASPInputProgram normalRound;
         private ASPInputProgram choiceRaise;
         private ASPInputProgram discardCardsRound;
 
-        public static final boolean CHOICERAISE = false;
-        public static final boolean DISCARDCARDS = true;
+        public static final int NORMALROUND  = 0;
+        public static final int CHOICERAISE  = 1;
+        public static final int DISCARDCARDS = 2;
 
         private InputProgram facts;
 
@@ -63,6 +65,11 @@ public class EnemyAI extends Player {
 
             choiceRaise = new ASPInputProgram();
             choiceRaise.addProgram(encodingChoiseRaise);
+
+            normalRound = new ASPInputProgram();
+            normalRound.addProgram(encodingNormalRound);
+
+            oldTurn = new ArrayList<>();
         }
 
         private void setPathResources() {
@@ -81,9 +88,21 @@ public class EnemyAI extends Player {
             }
         }
 
-        private Handler initHandlerWithEncoding(boolean isChoiceRaise) {
+        private Handler initHandlerWithEncoding(int typeRound) {
             Handler handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
-            handler.addProgram(isChoiceRaise == CHOICERAISE ? choiceRaise : discardCardsRound);
+
+            switch (typeRound){
+                case NORMALROUND:
+                    handler.addProgram(normalRound);
+                    break;
+                case CHOICERAISE:
+                    handler.addProgram(choiceRaise);
+                    break;
+                case DISCARDCARDS:
+                    handler.addProgram(discardCardsRound);
+                    break;
+            }
+
             return handler;
         }
 
@@ -120,6 +139,14 @@ public class EnemyAI extends Player {
             oldTurn.forEach(atom -> facts.addProgram(atom + "."));
         }
 
+        private void addOldAnswerSets(AnswerSets answers){
+            for (AnswerSet an : answers.getAnswersets()) {
+                for (String atom : an.getAnswerSet()) {
+                    facts.addProgram(atom + ".");
+                }
+            }
+        }
+
         private AnswerSets getOutput(Handler handler) throws Exception {
             Output o = handler.startSync();
             if (((AnswerSets) o).getAnswersets().size() == 0) {
@@ -130,13 +157,25 @@ public class EnemyAI extends Player {
 
         // round 1 e round 3
         public void doAnAIChoise(int currentPlayerValue, int currentValue) {
-            Handler handler = initHandlerWithEncoding(true);
+            Handler handler = initHandlerWithEncoding(NORMALROUND);
             addFactsCards();
-            AnswerSets answers = null;
 
             handler.addProgram(facts);
 
             // manage output choiceRaise
+            AnswerSets answers = null;
+            try {
+                answers = (AnswerSets) getOutput(handler);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+
+            handler = initHandlerWithEncoding(CHOICERAISE);
+            addFactsMoney(currentValue);
+            addOldAnswerSets(answers);
+            handler.addProgram(facts);
+
             try {
                 answers = (AnswerSets) getOutput(handler);
             } catch (Exception e) {
@@ -168,7 +207,6 @@ public class EnemyAI extends Player {
 
                 // if there is raise
                 if (raiseSum != null) {
-                    //System.out.println("currentValue = " + currentValue);
 
                     if (currentValue < raiseSum) {
                         currentValue = raiseSum;
@@ -192,7 +230,7 @@ public class EnemyAI extends Player {
 
         // round 2
         public void doAnAICardRemove(int currentPlayerValue, int currentValue) {
-            Handler handler = initHandlerWithEncoding(false);
+            Handler handler = initHandlerWithEncoding(DISCARDCARDS);
             addWithOldFacts();
             handler.addProgram(facts);
             AnswerSets answers = null;

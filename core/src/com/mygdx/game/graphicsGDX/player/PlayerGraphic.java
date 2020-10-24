@@ -1,10 +1,14 @@
 package com.mygdx.game.graphicsGDX.player;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.graphicsGDX.card.Deck;
 import com.mygdx.game.logic.card.Card;
 import com.mygdx.game.logic.player.Player;
+
+import java.awt.*;
 
 import static com.mygdx.game.graphicsGDX.player.PlayerDirection.LEFT_PLAYER;
 import static com.mygdx.game.graphicsGDX.player.PlayerDirection.RIGHT_PLAYER;

@@ -17,30 +17,28 @@ public class MyGdxGame extends ApplicationAdapter {
 	public static int WORLD_HEIGHT=650;
 	// ********** END GLOBAL VARIABLES *************
 
-	SpriteBatch batch;
-	Game game;
-	PrinterGDX printerGDX;
+	private SpriteBatch batch;
+	private Game game;
+	private PrinterGDX printerGDX;
 
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		game = new Game();
+		game = new Game(batch);
 	}
 
 	@Override
 	public void render () {
-
 		Gdx.gl.glClearColor((float)0.0, (float)0.5, (float)0.0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
-		game.draw(batch);
+		game.draw();
+
 		batch.end();
 	}
 
 	@Override
-	public void dispose ()
-	{
+	public void dispose () {
 		batch.dispose();
-		game.dispose();
 	}
 }

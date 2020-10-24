@@ -5,40 +5,39 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.mygdx.game.MyGdxGame;
 
 public class KeyboardHuman {
-    public Sprite plus = null;
-    public Sprite min = null;
-    public Sprite check = null;
-    public Sprite raise = null;
-    public Sprite fold = null;
-    public Sprite call = null;
+    public static int PLUS  = 0;
+    public static int MIN   = 1;
+    public static int CHECK = 2;
+    public static int RAISE = 3;
+    public static int FOLD  = 4;
+    public static int CALL  = 5;
+
+    public Sprite[] sprites;
 
     KeyboardHuman(){
+        sprites = new Sprite[6];
         initButton();
     }
 
     private void initButton() {
-        plus = new Sprite(new Texture("game/Plus.png"));
-        plus.setSize(70,50);
-        plus.setPosition(150, MyGdxGame.WORLD_HEIGHT/2-20);
+        sprites[PLUS ]   = new Sprite(new Texture("game/Plus.png"));
+        sprites[PLUS ]   .setSize(70,50);
+        sprites[PLUS ]   .setPosition(150, MyGdxGame.WORLD_HEIGHT/2-20);
+        sprites[MIN  ]   = new Sprite(new Texture("game/Min.png"));
+        sprites[MIN  ]   .setSize(70,50);
+        sprites[MIN  ]   .setPosition(300,MyGdxGame.WORLD_HEIGHT/2-30);
+        sprites[CHECK]   = new Sprite(new Texture("game/Check.png"));
+        sprites[CHECK]   .setSize(150,80);
+        sprites[CHECK]   .setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
+        sprites[CALL ]   = new Sprite(new Texture("game/Call.png"));
+        sprites[CALL ]   .setSize(150,80);
+        sprites[CALL ]   .setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
+        sprites[FOLD ]   = new Sprite(new Texture("game/Fold.png"));
+        sprites[FOLD ]   .setSize(150,80);
+        sprites[FOLD ]   .setPosition(600,MyGdxGame.WORLD_HEIGHT/2-30);
+        sprites[RAISE]   = new Sprite(new Texture("game/Raise.png"));
+        sprites[RAISE]   .setSize(150,80);
+        sprites[RAISE]   .setPosition(750,MyGdxGame.WORLD_HEIGHT/2-30);
 
-        min = new Sprite(new Texture("game/Min.png"));
-        min.setSize(70,50);
-        min.setPosition(300,MyGdxGame.WORLD_HEIGHT/2-30);
-
-        check = new Sprite(new Texture("game/Check.png"));
-        check.setSize(150,80);
-        check.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
-
-        call = new Sprite(new Texture("game/Call.png"));
-        call.setSize(150,80);
-        call.setPosition(450,MyGdxGame.WORLD_HEIGHT/2-30);
-
-        fold = new Sprite(new Texture("game/Fold.png"));
-        fold.setSize(150,80);
-        fold.setPosition(600,MyGdxGame.WORLD_HEIGHT/2-30);
-
-        raise = new Sprite(new Texture("game/Raise.png"));
-        raise.setSize(150,80);
-        raise.setPosition(750,MyGdxGame.WORLD_HEIGHT/2-30);
     }
 }

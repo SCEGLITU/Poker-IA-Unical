@@ -9,6 +9,7 @@ import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.graphicsGDX.card.Deck;
 import com.mygdx.game.graphicsGDX.player.PlayerGDXPrinter;
 import com.mygdx.game.graphicsGDX.player.PlayerGraphic;
+import com.mygdx.game.graphicsGDX.player.human.HumanGraphic;
 import com.mygdx.game.logic.player.Player;
 import com.mygdx.game.printer.Printer;
 import com.mygdx.game.printer.PrinterText;
@@ -70,7 +71,7 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
 
     private FinishWritten finishWritten = new FinishWritten();
 
-    private ArrayList<PlayerGraphic> players;
+    private ArrayList<PlayerGraphic> players = new ArrayList<>();
     private Deck deck;
     private BitmapFont bitmapFont = new BitmapFont();
     private Batch batch;
@@ -116,6 +117,14 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
         for(int i=0; i<5; i++)
             print(player.getSpriteCard(deck, i));
 
+        if(player instanceof HumanGraphic){ // and e' il suo turno
+            Sprite[] sprites = ((HumanGraphic)player).keyboard.sprites;
+            for(Sprite sprite:sprites){
+                print(sprite);
+            }
+        }
+
+
         printUpgrade(player);
     }
 
@@ -152,28 +161,28 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
         return isRoundFinished;
     }
 
-    protected void printNotify(String text, PlayerGraphic player) {
+    public void printNotify(String text, PlayerGraphic player) {
         printIn = true;
         print(text, player.getNotifyX(), player.getNotifyY());
     }
 
-    protected void printUpgrade(PlayerGraphic player) {
+    public void printUpgrade(PlayerGraphic player) {
         print(player.getName() + "\nm: " + player.getMoney(), player.getUpgradeX(), player.getUpgradeY());
     }
 
-    protected void printChangeCard(int ncards, PlayerGraphic player){
+    public void printChangeCard(int ncards, PlayerGraphic player){
         printNotify("CHANGE " + ncards + " CARDS", player);
     }
 
-    protected void printRaise(int money, PlayerGraphic player){
+    public void printRaise(int money, PlayerGraphic player){
         printNotify("RAISE " + money, player);
     }
 
-    protected void printFold(PlayerGraphic player){
+    public void printFold(PlayerGraphic player){
         printNotify("FOLD", player);
     }
 
-    protected void printCheck(PlayerGraphic player){
+    public void printCheck(PlayerGraphic player){
         printNotify("CHECK", player);
     }
 
@@ -182,8 +191,21 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
         return Gdx.input.isKeyJustPressed(Input.Keys.ENTER);
     }
 
+    public boolean pressedRight()
+    {
+        return Gdx.input.isKeyJustPressed(Input.Keys.RIGHT);
+    }
+
+    public boolean pressedLeft()
+    {
+        return Gdx.input.isKeyJustPressed(Input.Keys.LEFT);
+    }
+
     public void dispose(){
         deck.dispose();
     }
 
+    public ArrayList<PlayerGraphic> getPlayers() {
+        return players;
+    }
 }

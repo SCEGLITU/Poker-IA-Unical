@@ -18,62 +18,19 @@ public class LogicGame {
         this.listener = listener;
     }
 
-    public interface PokerListener {
-
-        void raise(Player player, int v);
-        void check(Player player);
-        void call(Player player);
-        void fold(Player player);
-        void changeCard(Player player, int numberOfRMVCard);
-
-        // bitmapFont.draw(batch, ""+currentPlayerValue, 250, MyGdxGame.WORLD_HEIGHT/2f+15);
-        //                    player.drawKeybord(batch);
-        void printKeyboard(Human human, int currentValue);
-
-        //cursor.intersectSprite(((Human) player).plus)
-        boolean humanCheck();
-        boolean humanCall();
-        boolean humanRaise();
-        boolean humanFold();
-        boolean humanPlus();
-        boolean humanMinus();
-
-        void finishRound();
-
-        // Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)
-        boolean right();
-        boolean left();
-
-        Card removeCard(Player human);
-        boolean endRemoveCard(Human human);
-
-        void updatePlayer(Player player);
-    }
-
     int winner =-1;
     boolean blind=false;
     int cash=40;
     private int playerShift = 0;
     private int round = 1;
-    private ArrayList<ArrayList<String>> oldTurn =
-            new ArrayList<ArrayList<String> >();
     static public int currentValue = 0;
     private int currentPlayerValue = 0;
-
-    static final public int UP_PLAYER = 0;
-    static final public int LEFT_PLAYER = 1;
-    static final public int RIGHT_PLAYER = 2;
-    static final public int DOWN_PLAYER = 3;
     static final public int NUM_OF_PLAYERS = 4;
     static final public int NUM_OF_CARDS = 5;
 
     static public Dealer dealer;
     private ArrayList<Player> players;
 
-
-    private ArrayList<Card> rmve;
-
-    private static Handler handler;
     private Evaluator evaluator;
 
     private Game game;
@@ -83,14 +40,20 @@ public class LogicGame {
         this.game = game;
         this.dealer = new Dealer();
         this.players = new ArrayList<>();
-        this.rmve = new ArrayList<>();
         this.evaluator = new Evaluator(players);
         createPlayers();
         setAllCardForAllPlayer();
+    }
 
-        oldTurn.add(null);
-        oldTurn.add(null);
-        oldTurn.add(null);
+    public LogicGame(Game game, PokerListener pokerListener)
+    {
+        this.listener = pokerListener;
+        this.game = game;
+        this.dealer = new Dealer();
+        this.players = new ArrayList<>();
+        this.evaluator = new Evaluator(players);
+        createPlayers();
+        setAllCardForAllPlayer();
     }
 
     public void gameCicle(){
@@ -190,7 +153,6 @@ public class LogicGame {
             }
         }
     }
-
 
     public void allFold(){
         int cont=0;
@@ -335,5 +297,37 @@ public class LogicGame {
                 return listener.endRemoveCard(human);
             return false;
         }
+    }
+
+    public interface PokerListener {
+
+        void raise(Player player, int v);
+        void check(Player player);
+        void call(Player player);
+        void fold(Player player);
+        void changeCard(Player player, int numberOfRMVCard);
+
+        // bitmapFont.draw(batch, ""+currentPlayerValue, 250, MyGdxGame.WORLD_HEIGHT/2f+15);
+        //                    player.drawKeybord(batch);
+        void printKeyboard(Human human, int currentValue);
+
+        //cursor.intersectSprite(((Human) player).plus)
+        boolean humanCheck();
+        boolean humanCall();
+        boolean humanRaise();
+        boolean humanFold();
+        boolean humanPlus();
+        boolean humanMinus();
+
+        void finishRound();
+
+        // Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)
+        boolean right();
+        boolean left();
+
+        Card removeCard(Human human);
+        boolean endRemoveCard(Human human);
+
+        void updatePlayer(Player player);
     }
 }
