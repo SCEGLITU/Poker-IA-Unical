@@ -15,6 +15,7 @@ import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -136,7 +137,12 @@ public class EnemyAI extends Player {
         }
 
         private void addWithOldFacts() {
-            oldTurn.forEach(atom -> facts.addProgram(atom + "."));
+            oldTurn.forEach(new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                    facts.addProgram(s + ".");
+                }
+            });
         }
 
         private void addOldAnswerSets(AnswerSets answers){

@@ -17,53 +17,8 @@ import com.mygdx.game.printer.TextSprite;
 
 import java.util.ArrayList;
 
-/*
-    input player e deck
-
-    print player
-
-//                    if (listener.right() || listener.left()) {
-//                        int count = 0;
-//                        int sizeCards = player.getCards().size();
-//                        boolean setFirstPos = true;
-//                        for (Card card : player.getCards()) {
-//                            Sprite cardSprite = deck.getCard(card);
-//                            if (cursor.intersectSprite(cardSprite)) {
-//                                if (listener.right())
-//                                    count++;
-//                                else
-//                                    count--;
-//
-//                                if (count == -1) {
-//                                    count = sizeCards - 1;
-//                                }
-//                                cursor.setX(deck.getCard(player.getCard((count) % sizeCards)).getX() + 5);
-//                                cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT -
-//                                        deck.getCard(player.getCard((count) % sizeCards)).getY() + 5);
-//                                setFirstPos = false;
-//                                break;
-//                            }
-//                            count++;
-//                        }
-//
-//                        if (setFirstPos) {
-//                            cursor.setX(deck.getCard(player.getCard(0)).getX() + 5);
-//                            cursor.setY(Gdx.graphics.getHeight() - MyGdxGame.CARD_HEIGHT -
-//                                    (deck.getCard(player.getCard(0)).getY()) + 5);
-//                        }
-//                        useKeyboard = true;
-//                    }
-//                    for(Card card: player.getCards())
-//                    {
-//                        Rectangle rectangleCard = Deck.getInstance().getCard(card).getBoundingRectangle();
-//                        if(rectangleCard.contains(cursor.getX(), cursor.getY()))
-//                            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && (!(rmve.contains(card)))) {
-//                                rmve.add(card);
-//                                System.out.println("remove this card");
-//                            }
-//                    }
- */
-
+import static com.mygdx.game.graphicsGDX.player.human.KeyboardHuman.CALL;
+import static com.mygdx.game.graphicsGDX.player.human.KeyboardHuman.CHECK;
 
 public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, PlayerGDXPrinter {
 
@@ -84,15 +39,18 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
     {
         this.batch = batch;
         this.deck = new Deck();
-        plys.forEach(player ->
-                players.add( new PlayerGraphic(player,players.size()) ));
+        for(Player player:plys){
+            players.add( new PlayerGraphic(player,players.size()) );
+        }
         this.cursor = new Cursor();
         bitmapFont.getData().setScale(2);
     }
 
     public void printNormal()
     {
-        players.forEach(this::print);
+        for(PlayerGraphic player:players){
+            print(player);
+        }
     }
 
     @Override
@@ -110,20 +68,26 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
         print(textSprite.getText(), textSprite.getX(), textSprite.getY());
     }
 
+    public void printKeyboard(HumanGraphic player, int value, boolean callMode){
+        Sprite[] sprites = ((HumanGraphic)player).keyboard.sprites;
+        for(Sprite sprite:sprites){
+            if(callMode){
+                if(!(sprite == sprites[CHECK]))
+                    print(sprite);
+            }else {
+                if(!(sprite == sprites[CALL]))
+                print(sprite);
+            }
+        }
+
+    }
+
     @Override
     public void print(PlayerGraphic player) {
         player.setCardPositionToDraw(deck);
 
         for(int i=0; i<5; i++)
             print(player.getSpriteCard(deck, i));
-
-        if(player instanceof HumanGraphic){ // and e' il suo turno
-            Sprite[] sprites = ((HumanGraphic)player).keyboard.sprites;
-            for(Sprite sprite:sprites){
-                print(sprite);
-            }
-        }
-
 
         printUpgrade(player);
     }
@@ -184,6 +148,10 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
 
     public void printCheck(PlayerGraphic player){
         printNotify("CHECK", player);
+    }
+
+    public void printCall(PlayerGraphic player){
+        printNotify("CALL", player);
     }
 
     public boolean pressedEnter()

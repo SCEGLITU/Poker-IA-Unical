@@ -25,6 +25,14 @@ public class HumanGraphic extends PlayerGraphic {
         return listener.clickSprite(keyboard.sprites[CALL]);
     }
 
+    public boolean plusSelected(){
+        return listener.clickSprite(keyboard.sprites[PLUS]);
+    }
+
+    public boolean minusSelected(){
+        return listener.clickSprite(keyboard.sprites[MIN]);
+    }
+
     public boolean raiseSelected() {
         return listener.clickSprite(keyboard.sprites[RAISE]);
     }
@@ -49,7 +57,7 @@ public class HumanGraphic extends PlayerGraphic {
         return null;
     }
 
-    public void humanManager(boolean right, boolean left){
+    public void cursorKeyboard(boolean right, boolean left){
         if (right || left) {
             int count = 0;
             int sizeCards = player.getCards().size();

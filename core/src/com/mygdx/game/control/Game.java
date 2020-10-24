@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 
 import com.mygdx.game.graphicsGDX.PrinterGDX;
 import com.mygdx.game.graphicsGDX.player.PlayerGraphic;
+import com.mygdx.game.graphicsGDX.player.human.HumanGraphic;
 import com.mygdx.game.logic.*;
 import com.mygdx.game.logic.card.Card;
 import com.mygdx.game.logic.player.Human;
@@ -56,67 +57,93 @@ public class Game {
 
             @Override
             public void printKeyboard(Human human, int currentValue) {
-                
+                Player player = human;
+                if(playerMap.get(player) instanceof HumanGraphic) {
+                    printerGDX.printKeyboard((HumanGraphic) playerMap.get(player), currentValue, true);
+                }
             }
 
             @Override
-            public boolean humanCheck() {
+            public boolean humanCheck(Human human) {
+                PlayerGraphic playerGraphic = playerMap.get((Player) human);
+                if(playerGraphic instanceof HumanGraphic){
+                    return ((HumanGraphic) playerGraphic).checkSelected();
+                }
                 return false;
             }
 
             @Override
-            public boolean humanCall() {
+            public boolean humanCall(Human human) {
+                PlayerGraphic playerGraphic = playerMap.get((Player) human);
+                if(playerGraphic instanceof HumanGraphic){
+                    return ((HumanGraphic) playerGraphic).callSelected();
+                }
                 return false;
             }
 
             @Override
-            public boolean humanRaise() {
+            public boolean humanRaise(Human human) {
+                PlayerGraphic playerGraphic = playerMap.get((Player) human);
+                if(playerGraphic instanceof HumanGraphic){
+                    return ((HumanGraphic) playerGraphic).raiseSelected();
+                }
                 return false;
             }
 
             @Override
-            public boolean humanFold() {
+            public boolean humanFold(Human human) {
+                PlayerGraphic playerGraphic = playerMap.get((Player) human);
+                if(playerGraphic instanceof HumanGraphic){
+                    return ((HumanGraphic) playerGraphic).foldSelected();
+                }
                 return false;
             }
 
             @Override
-            public boolean humanPlus() {
+            public boolean humanPlus(Human human) {
+                PlayerGraphic playerGraphic = playerMap.get((Player) human);
+                if(playerGraphic instanceof HumanGraphic){
+                    return ((HumanGraphic) playerGraphic).plusSelected();
+                }
                 return false;
             }
 
             @Override
-            public boolean humanMinus() {
+            public boolean humanMinus(Human human) {
+                PlayerGraphic playerGraphic = playerMap.get((Player) human);
+                if(playerGraphic instanceof HumanGraphic){
+                    return ((HumanGraphic) playerGraphic).minusSelected();
+                }
                 return false;
             }
 
-            @Override
-            public void finishRound() {
 
+            @Override
+            public void finishRound(String winner) {
+                printerGDX.printFinish(winner);
             }
 
             @Override
             public boolean right() {
-                return false;
+                return printerGDX.pressedRight();
             }
 
             @Override
             public boolean left() {
-                return false;
+                return printerGDX.pressedLeft();
             }
 
             @Override
             public Card removeCard(Human human) {
+                if(playerMap.get(human) instanceof HumanGraphic) {
+                    return ((HumanGraphic) playerMap.get(human)).selectedCard();
+                }
                 return null;
             }
 
             @Override
             public boolean endRemoveCard(Human human) {
-                return false;
-            }
-
-            @Override
-            public void updatePlayer(Player player) {
-
+                return printerGDX.pressedEnter();
             }
         });
 

@@ -142,7 +142,7 @@ public class LogicGame {
                     p.setCurrentChecked(0);
                     p.setFold(false);
                 }
-                listener.finishRound();
+                listener.finishRound(players.get(winner).getName());
                 dealer.shuffle();
                 cash=40;
                 playerShift=0;
@@ -231,42 +231,42 @@ public class LogicGame {
         @Override
         public boolean humanCheck() {
             if(listener != null)
-                return listener.humanCheck();
+                return listener.humanCheck(human);
             return false;
         }
 
         @Override
         public boolean humanCall() {
             if(listener != null)
-                return listener.humanCall();
+                return listener.humanCall(human);
             return false;
         }
 
         @Override
         public boolean humanRaise() {
             if(listener != null)
-                return listener.humanRaise();
+                return listener.humanRaise(human);
             return false;
         }
 
         @Override
         public boolean humanFold() {
             if(listener != null)
-                return listener.humanFold();
+                return listener.humanFold(human);
             return false;
         }
 
         @Override
         public boolean humanPlus() {
             if(listener != null)
-                return listener.humanPlus();
+                return listener.humanPlus(human);
             return false;
         }
 
         @Override
         public boolean humanMinus() {
             if(listener != null)
-                return listener.humanMinus();
+                return listener.humanMinus(human);
             return false;
         }
 
@@ -312,22 +312,19 @@ public class LogicGame {
         void printKeyboard(Human human, int currentValue);
 
         //cursor.intersectSprite(((Human) player).plus)
-        boolean humanCheck();
-        boolean humanCall();
-        boolean humanRaise();
-        boolean humanFold();
-        boolean humanPlus();
-        boolean humanMinus();
+        boolean humanCheck(Human human);
+        boolean humanCall (Human human);
+        boolean humanRaise(Human human);
+        boolean humanFold (Human human);
+        boolean humanPlus (Human human);
+        boolean humanMinus(Human human);
 
-        void finishRound();
-
-        // Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)
+        void finishRound(String winner);
         boolean right();
         boolean left();
 
         Card removeCard(Human human);
         boolean endRemoveCard(Human human);
 
-        void updatePlayer(Player player);
     }
 }
