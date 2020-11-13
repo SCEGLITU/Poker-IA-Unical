@@ -151,7 +151,7 @@ public class Game {
     public void draw() {
         if(!isRoundFinished()) {
             printerGDX.drawRound();
-            logicGame.gameCicle();
+            logicGame.gameCycle();
         }
     }
 

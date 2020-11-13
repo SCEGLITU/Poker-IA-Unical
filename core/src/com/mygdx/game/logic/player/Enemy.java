@@ -19,10 +19,12 @@ public class Enemy extends Player {
 
     @Override
     public void move(int currentValue) {
-        if (currentValue < 100){
-            raise(100, currentValue);
-        } else
-            check(currentValue);
+        fold();
+//
+//        if (currentValue < 100){
+//            raise(100, currentValue);
+//        } else
+//            check(currentValue);
     }
 
     @Override

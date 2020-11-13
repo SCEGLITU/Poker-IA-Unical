@@ -20,11 +20,9 @@ public class LogicGame {
         this.listener = listener;
     }
 
-    int winner =-1;
     boolean blind=false;
     private int playerShift = 0;
     private int round = 1;
-    static public int currentValue = 0;
     static final public int NUM_OF_PLAYERS = 4;
     static final public int NUM_OF_CARDS = 5;
 
@@ -48,8 +46,9 @@ public class LogicGame {
 
     }
 
-    public void gameCicle(){
+    public void gameCycle(){
 
+        System.out.println("playerShift = " + playerShift);
         allFold();
 
         if(!blind) {
@@ -65,7 +64,7 @@ public class LogicGame {
             if(!player.isFold()) {
                 // if it's in the round where the player can raise the sum
                 if (round == 1 || round == 3) {
-                    player.moveChoice(currentValue);
+                    player.moveChoice(plate.getCurrentValue());
                     //END
                 }
                 else if (round == 2) {
@@ -80,22 +79,22 @@ public class LogicGame {
 
     public void createPlayers()
     {
-//        for(int i=0; i<2; i++)
-//        players.add(new Enemy("LEFT_PLAYER", 4000));
+        for(int i=0; i<3; i++)
+        players.add(new Enemy("LEFT_PLAYER", 4000));
 
-        currentValue = START_VALUE;
+        plate.setCurrentValue(START_VALUE);
 
-        for(int i=0; i<3; i++){
-            EnemyAI enemyAI = new EnemyAI("RIGHT_PLAYER", 4000);
-            enemyAI.setOnIntelligenceListener(new EnemyAI.OnIntelligenceListener() {
-                @Override
-                public int getSumPlate() {
-                    return plate.getCash();
-                }
-            });
-
-            players.add(enemyAI);
-        }
+//        for(int i=0; i<3; i++){
+//            EnemyAI enemyAI = new EnemyAI("RIGHT_PLAYER", 4000);
+//            enemyAI.setOnIntelligenceListener(new EnemyAI.OnIntelligenceListener() {
+//                @Override
+//                public int getSumPlate() {
+//                    return plate.getCash();
+//                }
+//            });
+//
+//            players.add(enemyAI);
+//        }
 
         for(int i=0; i<3; i++){
             players.get(i).setName("ENEMY-" + i);
@@ -109,7 +108,6 @@ public class LogicGame {
         human.setOnHumanListener    (new HumanListener(human));
 
         players.add(human);
-
     }
 
     public void setAllCardForAllPlayer(){
@@ -130,20 +128,19 @@ public class LogicGame {
     public boolean satisfiedPlate(){
         for(Player player:players){
             int cc = player.getCurrentChecked();
-            if(!player.isFold() && cc != currentValue)
+            if(!player.isFold() && cc != plate.getCurrentValue())
                 return false;
         }
         return true;
     }
 
     public void increaseRound(){
-        System.out.println("Player: " + players.get(playerShift).getName() +" --ROUND--> "+round);
         playerShift++;
         if(playerShift==4){
             playerShift=0;
 
             if(round != 2 && satisfiedPlate()) {
-                currentValue = START_VALUE;
+                plate.setCurrentValue(START_VALUE);
                 for (Player p : players) {
                     p.newRound(START_VALUE);
                 }
@@ -152,36 +149,45 @@ public class LogicGame {
                 round++;
             }
             if(round==4){
-                winner = evaluator.getWinner();
-                int moneyWinner = players.get(winner).getMoney();
+                win();
 
-                 players.get(winner).setMoney(
-                        moneyWinner
-                                + plate.getCash());
                 for(Player p:players){
                     p.newGame(START_VALUE);
                 }
-                listener.finishRound(players.get(winner).getName());
 
-                dealer.shuffle();
                 plate.clear();
 
-                playerShift=0;
-                round=1;
-                blind=false;
+                playerShift = 0;
+                round = 1;
+                blind = false;
+
                 setAllCardForAllPlayer();
             }
         }
     }
 
+    private void win(){
+        int winner = evaluator.getWinner();
+        int moneyWinner = players.get(winner).getMoney();
+
+        players.get(winner).setMoney(
+                moneyWinner + plate.getCash()
+                );
+
+        listener.finishRound(players.get(winner).getName());
+    }
+
     public void allFold(){
         int cont=0;
-        for(Player p: players)
-            if(p.isFold())
+
+        for(Player p: players) {
+            if (p.isFold()){
                 cont++;
+            }
+        }
+
         if(cont==3){
-            playerShift=3;
-            round=3;
+            round = 4;
             increaseRound();
         }
     }
@@ -202,7 +208,7 @@ public class LogicGame {
         @Override
         public void checkPerform() {
             setPlayer();
-            plate.increase(currentValue);
+            plate.increase(plate.getCurrentValue());
             if(listener != null)
                 listener.check(player);
             increaseRound();
@@ -211,7 +217,6 @@ public class LogicGame {
         @Override
         public void callPerform() {
             setPlayer();
-            plate.increase(currentValue);
             if(listener != null)
                 listener.call(player);
             increaseRound();
@@ -220,8 +225,8 @@ public class LogicGame {
         @Override
         public void raisePerform(int money) {
             setPlayer();
-            currentValue += money;
-            plate.increase(money+currentValue);
+            plate.setCurrentValue(plate.getCurrentValue() + money);
+            plate.increase(money+plate.getCurrentValue());
             if(listener != null)
                 listener.raise(player, money);
             increaseRound();

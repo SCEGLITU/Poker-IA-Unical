@@ -44,12 +44,17 @@ public class Evaluator {
         int[] points = new int[players.size()];
 
         for (int i = 0; i < players.size(); i++) {
-            points[i] = getPoint(players.get(i));
-
-            if (indexWinner == -1 || points[indexWinner] < points[i] ||
-                    (points[indexWinner] == points[i] && getRankHighestCard(players.get(indexWinner)) < getRankHighestCard(players.get(i))) )
-                if(!players.get(i).isFold())
+            if (!players.get(i).isFold()){
+                points[i] = getPoint(players.get(i));
+                if(
+                    indexWinner == -1
+                    || points[indexWinner] < points[i]
+                    || (points[indexWinner] == points[i]
+                        && getRankHighestCard(players.get(indexWinner)) < getRankHighestCard(players.get(i)))
+                ) {
                     indexWinner = i;
+                }
+            }
         }
 
         for(int i=0; i<players.size(); i++)

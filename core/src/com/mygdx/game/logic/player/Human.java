@@ -18,6 +18,10 @@ public class Human extends Player {
     public void move(int currentValue) {
         check = currentValue != currentChecked;
 
+        if(currentPlayerValue < currentValue){
+            currentPlayerValue = currentValue;
+        }
+
         // mouse pressing input
         // press plus
         if (listener.humanPlus()) {
