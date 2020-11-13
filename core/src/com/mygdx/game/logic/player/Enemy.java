@@ -12,23 +12,25 @@ public class Enemy extends Player {
 
     private Random random;
 
-    public Enemy(String name, int money, OnActionListerner listerner) {
-        super(name, money, listerner);
+    public Enemy(String name, int money) {
+        super(name, money);
         random = new Random();
     }
 
     @Override
-    public void moveChoice(int currentPlayerValue, int currentValue) {
-        if (random.nextInt(5) == 0) {
-            fold();
-        } else {
-            raise(random.nextInt(money));
-        }
+    public void move(int currentValue) {
+        if (currentValue < 100){
+            raise(100, currentValue);
+        } else
+            check(currentValue);
     }
 
     @Override
-    public void removeCardChoice(int currentPlayerValue, int currentValue) {
+    public void removeCard() {
         int ncards = random.nextInt(cards.size());
-
+        for(int i=0; i<ncards; i++){
+            rmv.add(cards.get(i));
+        }
+        changeCards();
     }
 }

@@ -5,11 +5,15 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.graphicsGDX.card.Deck;
 import com.mygdx.game.graphicsGDX.player.PlayerGDXPrinter;
 import com.mygdx.game.graphicsGDX.player.PlayerGraphic;
 import com.mygdx.game.graphicsGDX.player.human.HumanGraphic;
+import com.mygdx.game.logic.Plate;
+import com.mygdx.game.logic.card.Card;
+import com.mygdx.game.logic.player.Human;
 import com.mygdx.game.logic.player.Player;
 import com.mygdx.game.printer.Printer;
 import com.mygdx.game.printer.PrinterText;
@@ -32,15 +36,53 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
     private Batch batch;
 
     private boolean printIn = false;
+    private boolean printFinish = false;
 
     private double fps = 10;
+    private Plate plate;
 
-    public PrinterGDX(Batch batch, ArrayList<Player> plys)
+    public PrinterGDX(Batch batch, ArrayList<Player> plys, Plate plate)
     {
+        this.plate = plate;
         this.batch = batch;
         this.deck = new Deck();
+        int index = 0;
         for(Player player:plys){
-            players.add( new PlayerGraphic(player,players.size()) );
+            if(player instanceof Human){
+                HumanGraphic humanGraphic = new HumanGraphic((Human) player, index++);
+                humanGraphic.setListener(new HumanGraphic.OnCursorListener() {
+                    @Override
+                    public boolean intersectCard(Card card) {
+                        return cursor.intersectSprite(deck.getCard(card));
+                    }
+
+                    @Override
+                    public void setXCursor(Card card) {
+                        cursor.setX(deck.getCard(card).getX());
+                    }
+
+                    @Override
+                    public void setYCursor(Card card) {
+                        cursor.setY(deck.getCard(card).getY());
+                    }
+
+                    @Override
+                    public boolean clickCard(Card card) {
+                        return clickSprite(deck.getCard(card));
+                    }
+
+                    @Override
+                    public boolean clickSprite(Sprite sprite) {
+                        return
+                                sprite.getBoundingRectangle().contains(cursor.getX(), cursor.getY())
+                                        &&
+                                        Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
+                    }
+                });
+                players.add(humanGraphic);
+            }else {
+                players.add(new PlayerGraphic(player, index++));
+            }
         }
         this.cursor = new Cursor();
         bitmapFont.getData().setScale(2);
@@ -51,6 +93,7 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
         for(PlayerGraphic player:players){
             print(player);
         }
+        print(plate.toString(), 400, 450);
     }
 
     @Override
@@ -68,17 +111,19 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
         print(textSprite.getText(), textSprite.getX(), textSprite.getY());
     }
 
-    public void printKeyboard(HumanGraphic player, int value, boolean callMode){
-        Sprite[] sprites = ((HumanGraphic)player).keyboard.sprites;
+    public void printKeyboard(HumanGraphic player, boolean callMode){
+        Sprite[] sprites = player.keyboard.sprites;
         for(Sprite sprite:sprites){
             if(callMode){
                 if(!(sprite == sprites[CHECK]))
                     print(sprite);
             }else {
                 if(!(sprite == sprites[CALL]))
-                print(sprite);
+                    print(sprite);
             }
         }
+
+        print(""+player.getCurrentPlayerValue(), 250, (int) (MyGdxGame.WORLD_HEIGHT/2f+15));
 
     }
 
@@ -94,19 +139,27 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
 
     public void printFinish(String winner)
     {
-        printIn = true;
+        printFinish = true;
         print(finishWritten);
         bitmapFont.draw(batch, "VINCE: " + winner,
                 MyGdxGame.WORLD_WIDTH/2, MyGdxGame.WORLD_HEIGHT/2);
     }
 
-    public boolean drawRound(boolean isRoundFinished)
+    public void drawRound()
     {
-
-        if(pressedEnter()){
-            isRoundFinished=false;
+        printNormal();
+        if(printIn){
+            fps = 2;
         }
 
+        if(printFinish){
+            try {
+                long x = 1000L;
+                Thread.sleep(x);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
         try {
             long x = (long)(1000/fps-Gdx.graphics.getDeltaTime());
@@ -122,11 +175,16 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
         else
             fps = 15;
 
-        return isRoundFinished;
+        if(printFinish){
+            printFinish = false;
+        }
+        else
+            fps = 15;
     }
 
     public void printNotify(String text, PlayerGraphic player) {
         printIn = true;
+        System.out.println("[N] " + player.getName() + " " + text );
         print(text, player.getNotifyX(), player.getNotifyY());
     }
 

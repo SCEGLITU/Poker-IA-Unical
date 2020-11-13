@@ -27,6 +27,13 @@ straight :-
         card(_, N + 3),
         card(_, N + 4).
 
+straight :-
+        card(_, 10),      
+        card(_, 11), 
+        card(_, 12), 
+        card(_, 13), 
+        card(_,  1). 
+
 % four of the handed cards have the same num
 poker(N):- #count{S1: card(S1,X), X=N, S1!=S} = 3, card(S,N).
 
@@ -52,12 +59,18 @@ highestCard(N):- #max{N1: card(_,N1)} = N, not highestCard(1).
 % highest Couple Card
 
 highestCoupleCard(X):- couple(X), not doubleCouple(N,X), not full(N,X), card(_,N).
-highestCoupleCard(X):- doubleCouple(X,_).
+highestCoupleCard(X):- doubleCouple(X,X2), X>X2, X2!=1.
+highestCoupleCard(X2):- doubleCouple(X,X2), X<=X2, X2!=1.
+highestCoupleCard(X):- doubleCouple(X,_), X=1.
+highestCoupleCard(X):- doubleCouple(_,X), X=1.
+
 highestCoupleCard(X):- tris(X).
 highestCoupleCard(X):- poker(X).
 
 
-highestCoupleCard:- straight.
-highestCoupleCard:- colorStraight.
-highestCoupleCard:- royalStraight.
-highestCoupleCard:- color.
+highestCoupleCard(X):- straight     , highestCard(X).
+highestCoupleCard(X):- colorStraight, highestCard(X).
+highestCoupleCard(X):- royalStraight, highestCard(X).
+highestCoupleCard(X):- color        , highestCard(X).
+
+highestCoupleCard:- highestCoupleCard(X).

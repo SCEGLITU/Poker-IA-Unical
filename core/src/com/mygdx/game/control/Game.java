@@ -19,11 +19,11 @@ public class Game {
     private PrinterGDX printerGDX;
     private LogicGame logicGame;
 
-    private HashMap<Player, PlayerGraphic> playerMap;
+    private HashMap<Player, PlayerGraphic> playerMap = new HashMap<>();
 
     public Game(Batch batch) {
         logicGame = new LogicGame(this);
-        this.printerGDX = new PrinterGDX(batch, logicGame.getPlayers());
+        this.printerGDX = new PrinterGDX(batch, logicGame.getPlayers(), logicGame.getPlate());
 
         for(int i=0; i<logicGame.getPlayers().size(); i++){
             playerMap.put(logicGame.getPlayers().get(i), printerGDX.getPlayers().get(i));
@@ -59,7 +59,7 @@ public class Game {
             public void printKeyboard(Human human, int currentValue) {
                 Player player = human;
                 if(playerMap.get(player) instanceof HumanGraphic) {
-                    printerGDX.printKeyboard((HumanGraphic) playerMap.get(player), currentValue, true);
+                    printerGDX.printKeyboard((HumanGraphic) playerMap.get(player), !human.isCheck());
                 }
             }
 
@@ -117,7 +117,6 @@ public class Game {
                 return false;
             }
 
-
             @Override
             public void finishRound(String winner) {
                 printerGDX.printFinish(winner);
@@ -149,14 +148,11 @@ public class Game {
 
     }
 
-    public void draw(){
-        printerGDX.printNormal();
-        logicGame.gameCicle();
-        printerGDX.drawRound(roundFinished);
-    }
-
-    private void win(String winner) {
-        printerGDX.printFinish(winner);
+    public void draw() {
+        if(!isRoundFinished()) {
+            printerGDX.drawRound();
+            logicGame.gameCicle();
+        }
     }
 
     public boolean isRoundFinished() {

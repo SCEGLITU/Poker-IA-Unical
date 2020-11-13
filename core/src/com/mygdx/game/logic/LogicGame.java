@@ -4,6 +4,7 @@ import com.mygdx.game.control.Game;
 import com.mygdx.game.logic.card.Card;
 import com.mygdx.game.logic.card.Dealer;
 import com.mygdx.game.logic.player.Enemy;
+import com.mygdx.game.logic.player.EnemyAI;
 import com.mygdx.game.logic.player.Human;
 import com.mygdx.game.logic.player.Player;
 import it.unical.mat.embasp.base.Handler;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 
 public class LogicGame {
 
+    private static final int START_VALUE = 20;
     private PokerListener listener;
 
     public void setPokerListener(PokerListener listener) {
@@ -20,18 +22,17 @@ public class LogicGame {
 
     int winner =-1;
     boolean blind=false;
-    int cash=40;
     private int playerShift = 0;
     private int round = 1;
     static public int currentValue = 0;
-    private int currentPlayerValue = 0;
     static final public int NUM_OF_PLAYERS = 4;
     static final public int NUM_OF_CARDS = 5;
 
-    static public Dealer dealer;
+    private Dealer dealer;
     private ArrayList<Player> players;
 
     private Evaluator evaluator;
+    private Plate plate;
 
     private Game game;
 
@@ -41,19 +42,10 @@ public class LogicGame {
         this.dealer = new Dealer();
         this.players = new ArrayList<>();
         this.evaluator = new Evaluator(players);
+        this.plate = new Plate();
         createPlayers();
         setAllCardForAllPlayer();
-    }
 
-    public LogicGame(Game game, PokerListener pokerListener)
-    {
-        this.listener = pokerListener;
-        this.game = game;
-        this.dealer = new Dealer();
-        this.players = new ArrayList<>();
-        this.evaluator = new Evaluator(players);
-        createPlayers();
-        setAllCardForAllPlayer();
     }
 
     public void gameCicle(){
@@ -73,12 +65,12 @@ public class LogicGame {
             if(!player.isFold()) {
                 // if it's in the round where the player can raise the sum
                 if (round == 1 || round == 3) {
-                    player.moveChoice(currentPlayerValue, currentValue);
+                    player.moveChoice(currentValue);
                     //END
                 }
                 else if (round == 2) {
-                        player.removeCardChoice(currentPlayerValue, currentValue);
-                    }
+                    player.removeCardChoice();
+                }
             }
             else{
                 increaseRound();
@@ -88,16 +80,36 @@ public class LogicGame {
 
     public void createPlayers()
     {
-        players.add(new Enemy("LEFT_PLAYER", 4000, new PlayerListener()));
-        players.add(new Enemy("UP_PLAYER", 4000, new PlayerListener()));
-        players.add(new Enemy("RIGHT_PLAYER", 4000, new PlayerListener()));
+//        for(int i=0; i<2; i++)
+//        players.add(new Enemy("LEFT_PLAYER", 4000));
+
+        currentValue = START_VALUE;
+
+        for(int i=0; i<3; i++){
+            EnemyAI enemyAI = new EnemyAI("RIGHT_PLAYER", 4000);
+            enemyAI.setOnIntelligenceListener(new EnemyAI.OnIntelligenceListener() {
+                @Override
+                public int getSumPlate() {
+                    return plate.getCash();
+                }
+            });
+
+            players.add(enemyAI);
+        }
 
         for(int i=0; i<3; i++){
             players.get(i).setName("ENEMY-" + i);
+            players.get(i).setOnActionListerner(new PlayerListener());
         }
 
-        players.add(new Human("SONY", 4000,
-                new PlayerListener(), new HumanListener()));
+        // -----------------------------------------------
+
+        Human human = new Human("SONY", 4000);
+        human.setOnActionListerner  (new PlayerListener());
+        human.setOnHumanListener    (new HumanListener(human));
+
+        players.add(human);
+
     }
 
     public void setAllCardForAllPlayer(){
@@ -115,40 +127,48 @@ public class LogicGame {
         return players;
     }
 
+    public boolean satisfiedPlate(){
+        for(Player player:players){
+            int cc = player.getCurrentChecked();
+            if(!player.isFold() && cc != currentValue)
+                return false;
+        }
+        return true;
+    }
+
     public void increaseRound(){
-        System.out.println(playerShift+" --ROUND--> "+round);
+        System.out.println("Player: " + players.get(playerShift).getName() +" --ROUND--> "+round);
         playerShift++;
-        currentPlayerValue=currentValue;
         if(playerShift==4){
-            currentValue=0;
-            currentPlayerValue=20;
-            for(Player p:players)
-                if(!p.isFold()) {
-                    if(p.getMoney()>=p.getCurrentChecked()){
-                        p.setMoney(p.getMoney() - p.getCurrentChecked());
-                        cash+=p.getCurrentChecked();
-                    }
-                    p.setCurrentChecked(0);
-                }
             playerShift=0;
-            round++;
+
+            if(round != 2 && satisfiedPlate()) {
+                currentValue = START_VALUE;
+                for (Player p : players) {
+                    p.newRound(START_VALUE);
+                }
+                round++;
+            }else if (round==2){
+                round++;
+            }
             if(round==4){
+                winner = evaluator.getWinner();
+                int moneyWinner = players.get(winner).getMoney();
 
-
-                players.get(winner).setMoney(
-                        players.get(evaluator.getWinner()).getMoney()
-                                + cash);
+                 players.get(winner).setMoney(
+                        moneyWinner
+                                + plate.getCash());
                 for(Player p:players){
-                    p.setCurrentChecked(0);
-                    p.setFold(false);
+                    p.newGame(START_VALUE);
                 }
                 listener.finishRound(players.get(winner).getName());
+
                 dealer.shuffle();
-                cash=40;
+                plate.clear();
+
                 playerShift=0;
                 round=1;
                 blind=false;
-                currentValue=0;
                 setAllCardForAllPlayer();
             }
         }
@@ -166,6 +186,9 @@ public class LogicGame {
         }
     }
 
+    public Plate getPlate() {
+        return plate;
+    }
 
     public class PlayerListener implements Player.OnActionListerner {
 
@@ -179,6 +202,7 @@ public class LogicGame {
         @Override
         public void checkPerform() {
             setPlayer();
+            plate.increase(currentValue);
             if(listener != null)
                 listener.check(player);
             increaseRound();
@@ -187,6 +211,7 @@ public class LogicGame {
         @Override
         public void callPerform() {
             setPlayer();
+            plate.increase(currentValue);
             if(listener != null)
                 listener.call(player);
             increaseRound();
@@ -195,6 +220,8 @@ public class LogicGame {
         @Override
         public void raisePerform(int money) {
             setPlayer();
+            currentValue += money;
+            plate.increase(money+currentValue);
             if(listener != null)
                 listener.raise(player, money);
             increaseRound();
@@ -204,7 +231,7 @@ public class LogicGame {
         public void foldPerform() {
             setPlayer();
             if(listener != null)
-                listener.check(player);
+                listener.fold(player);
             increaseRound();
         }
 
@@ -212,7 +239,11 @@ public class LogicGame {
         public void changeCard(int sizeRmv) {
             setPlayer();
             if(listener != null)
-                listener.raise(player, sizeRmv);
+                listener.changeCard(player, sizeRmv);
+
+            for(int i=0; i<sizeRmv; i++){
+                player.addCard(dealer.getCard());
+            }
             increaseRound();
         }
     }
@@ -221,11 +252,8 @@ public class LogicGame {
 
         private Human human;
 
-        public HumanListener() {
-            if(players.get(playerShift) instanceof Human)
-                this.human = (Human) players.get(playerShift);
-            else
-                throw new RuntimeException("Error to init HumanListener");
+        public HumanListener(Human human) {
+            this.human = human;
         }
 
         @Override
@@ -297,6 +325,11 @@ public class LogicGame {
                 return listener.endRemoveCard(human);
             return false;
         }
+
+        @Override
+        public void performKeyboard(int value) {
+            listener.printKeyboard(human, value);
+        }
     }
 
     public interface PokerListener {
@@ -318,6 +351,7 @@ public class LogicGame {
         boolean humanFold (Human human);
         boolean humanPlus (Human human);
         boolean humanMinus(Human human);
+
 
         void finishRound(String winner);
         boolean right();

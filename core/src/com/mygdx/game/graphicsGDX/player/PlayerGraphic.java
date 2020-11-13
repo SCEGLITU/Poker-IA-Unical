@@ -28,6 +28,7 @@ public class PlayerGraphic implements ManagerCoordinatePlayer {
     public PlayerGraphic(Player player, int index) {
         this.player = player;
         direction = PlayerDirection.getPlayerDirection(index);
+        switchDirection();
     }
 
     private void switchDirection() {
@@ -43,7 +44,7 @@ public class PlayerGraphic implements ManagerCoordinatePlayer {
 
             case UP_PLAYER:
                 setAllCordinate(270, MyGdxGame.WORLD_HEIGHT - MyGdxGame.CARD_HEIGHT,
-                        775, 644, 375, 528);
+                        775, 644, 375, 500);
                 break;
 
             case DOWN_PLAYER:

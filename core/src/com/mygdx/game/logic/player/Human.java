@@ -4,69 +4,58 @@ import com.mygdx.game.logic.card.Card;
 
 public class Human extends Player {
 
-    public Human(String name, int money, OnActionListerner onActionListerner,
-                 OnHumanListener listener) {
-        super(name, money, onActionListerner);
-        this.listener = listener;
+    public Human(String name, int money) {
+        super(name, money);
+    }
+
+    protected boolean check = false;
+
+    public boolean isCheck() {
+        return check;
     }
 
     @Override
-    public void moveChoice(int currentPlayerValue, int currentValue) {
-//        listener.printKeyboard(this, currentPlayerValue);
+    public void move(int currentValue) {
+        check = currentValue != currentChecked;
 
         // mouse pressing input
-
-
         // press plus
         if (listener.humanPlus()) {
-            if (listener.left()) {
-                currentPlayerValue += 10;
-                System.out.println(currentPlayerValue); //get current raise value
-            }
+            currentPlayerValue += 10;
         }
 
         // press min
         if (listener.humanMinus()) {
-            if (listener.left()) {
-                if (currentPlayerValue > currentValue)
-                    currentPlayerValue -= 10;
-            }
+            if (currentPlayerValue > currentValue)
+                currentPlayerValue -= 10;
         }
 
         // press fold
         if (listener.humanFold()) {
-            if (listener.left()) {
-                fold();
-            }
+            fold();
         }
 
         // press check
-        if (listener.humanCheck()) {
-            if (listener.left()) {
-                if(getCurrentChecked() < currentValue){
-                    setCurrentChecked(currentValue);
-                    currentPlayerValue=currentValue;
-                }
-                check();
-                return;
-            }
+        if (listener.humanCheck() || listener.humanCall()) {
+            currentPlayerValue = currentValue;
+            check(currentValue);
+            return;
         }
         // press raise
         else if (listener.humanRaise()) {
-            if (listener.left() && currentPlayerValue >currentValue) {
 
-                currentValue = currentPlayerValue;
-
-                setCurrentChecked(currentPlayerValue);
-                raise(currentValue);
+            if (currentPlayerValue > currentValue) {
+                raise(currentPlayerValue-currentValue, currentValue);
             }
         }
+
+        listener.performKeyboard(currentPlayerValue);
     }
 
     @Override
-    public void removeCardChoice(int currentPlayerValue, int currentPlayer) {
-        Card rmvCard = null;
-        if((rmvCard = listener.removeCard()) != null) {
+    public void removeCard() {
+        Card rmvCard = (rmvCard = listener.removeCard());
+        if(rmvCard != null) {
             rmv.add(rmvCard);
         }
 
@@ -76,6 +65,10 @@ public class Human extends Player {
     }
 
     private OnHumanListener listener;
+
+    public void setOnHumanListener(OnHumanListener listener) {
+        this.listener = listener;
+    }
 
     public interface OnHumanListener{
         boolean humanCheck();
@@ -91,6 +84,8 @@ public class Human extends Player {
         Card removeCard();
 
         boolean endRemoveCard();
+
+        void performKeyboard(int value);
     }
 
 }

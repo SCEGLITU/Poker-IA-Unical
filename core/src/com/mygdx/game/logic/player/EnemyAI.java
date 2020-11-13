@@ -22,22 +22,20 @@ import java.util.regex.Pattern;
 public class EnemyAI extends Player {
 
     private DLVManager dlvManager = new DLVManager();
-    private OnPlateListener plateListener;
+    private OnIntelligenceListener aiListener;
 
-
-    public EnemyAI(String name, int money, OnActionListerner listener, OnPlateListener plateListener) {
-        super(name, money, listener);
-        this.plateListener = plateListener;
+    public EnemyAI(String name, int money) {
+        super(name, money);
     }
 
     @Override
-    public void moveChoice(int currentPlayerValue, int currentValue) {
+    public void move(int currentValue) {
         dlvManager.doAnAIChoise(currentPlayerValue, currentValue);
     }
 
     @Override
-    public void removeCardChoice(int currentPlayerValue, int currentValue) {
-        dlvManager.doAnAICardRemove(currentPlayerValue, currentValue);
+    public void removeCard() {
+        dlvManager.doAnAICardRemove(currentPlayerValue);
     }
 
     private class DLVManager {
@@ -58,17 +56,16 @@ public class EnemyAI extends Player {
 
         private InputProgram facts;
 
-
         {
             setPathResources();
             discardCardsRound = new ASPInputProgram();
-            discardCardsRound.addProgram(encodingDiscardCardsRound);
+            discardCardsRound.addFilesPath(encodingDiscardCardsRound);
 
             choiceRaise = new ASPInputProgram();
-            choiceRaise.addProgram(encodingChoiseRaise);
+            choiceRaise.addFilesPath(encodingChoiseRaise);
 
             normalRound = new ASPInputProgram();
-            normalRound.addProgram(encodingNormalRound);
+            normalRound.addFilesPath(encodingNormalRound);
 
             oldTurn = new ArrayList<>();
         }
@@ -120,12 +117,7 @@ public class EnemyAI extends Player {
 
         private void addFactsMoney(int currentValue) {
 
-            int plate = plateListener.getSumPlate();
-            //                for(int i=0;i<playerShift;i++)
-            //                    if(!isFold())
-            //                        plate+=currentValue;
-            //                plate+=cash; //if I sum cash raiseChose.dlv goes in loop
-            //probably problem: code in dlv || missing parameters in input like AVG
+            int plate = aiListener.getSumPlate();
 
             facts = new ASPInputProgram();
             facts.addProgram("myWallet(" + getMoney() + ").");
@@ -133,6 +125,7 @@ public class EnemyAI extends Player {
             facts.addProgram("currentValue(" + currentValue + ").");
             facts.addProgram(String.format("betsPointsAvg(%d).", 15));
             facts.addProgram(String.format("confidence(%d).", 8));
+            facts.addProgram(String.format("currentChecked(%d).", currentChecked));
 
         }
 
@@ -150,13 +143,22 @@ public class EnemyAI extends Player {
                 for (String atom : an.getAnswerSet()) {
                     facts.addProgram(atom + ".");
                 }
+                break;
             }
         }
 
         private AnswerSets getOutput(Handler handler) throws Exception {
             Output o = handler.startSync();
+            try {
+                for(int i=0; ; i++){
+                    System.out.println("input dlv = " + handler.getInputProgram(i).getPrograms());
+                }}catch (Exception ignore){}
             if (((AnswerSets) o).getAnswersets().size() == 0) {
+                fold();
                 throw new Exception("NO ANSWERSET!");
+            }
+            for (AnswerSet an : ((AnswerSets) o).getAnswersets()) {
+                System.out.println("output = " + an.getAnswerSet());
             }
             return (AnswerSets) o;
         }
@@ -171,30 +173,37 @@ public class EnemyAI extends Player {
             // manage output choiceRaise
             AnswerSets answers = null;
             try {
-                answers = (AnswerSets) getOutput(handler);
+                answers = getOutput(handler);
+                System.out.println("output dlv = " + answers.getAnswerSetsString());
             } catch (Exception e) {
                 e.printStackTrace();
                 return;
+            }
+
+            oldTurn.clear();
+            for (AnswerSet an : answers.getAnswersets()) {
+                oldTurn.addAll(an.getAnswerSet());
             }
 
             handler = initHandlerWithEncoding(CHOICERAISE);
             addFactsMoney(currentValue);
-            addOldAnswerSets(answers);
+            addWithOldFacts();
             handler.addProgram(facts);
 
             try {
-                answers = (AnswerSets) getOutput(handler);
+                answers = getOutput(handler);
             } catch (Exception e) {
                 e.printStackTrace();
                 return;
             }
 
+
+            boolean doSomething = false;
             for (AnswerSet an : answers.getAnswersets()) {
                 Pattern patternRaise = Pattern.compile("raise\\((\\d+)\\)");
                 Matcher matcher;
                 Integer raiseSum = null;
-                boolean check = false;
-                boolean fold = false;
+
 
                 for (String atom : an.getAnswerSet()) {
                     //        System.out.println(atom);
@@ -202,41 +211,30 @@ public class EnemyAI extends Player {
 
                     if (matcher.find()) {
                         raiseSum = Integer.parseInt(matcher.group(1));
+                        raise(raiseSum, currentValue);
+                        doSomething = true;
                     }
                     if (atom.matches("check")) {
-                        check = true;
+                        check(currentValue);
+                        doSomething = true;
                     }
-                    if (atom.matches("fold")) {
-                        fold = true;
+                    else if(atom.matches("fold")){
+                        fold();
+                        doSomething = true;
                     }
                 }
 
-                // if there is raise
-                if (raiseSum != null) {
-
-                    if (currentValue < raiseSum) {
-                        currentValue = raiseSum;
-                    }
-                    setCurrentChecked(currentValue);
-                    raise(currentValue);
-                } else if (check) {
-                    setCurrentChecked(currentValue);
-                    check();
-                } else if (fold) {
-                    fold();
-                }
             }
-
-            oldTurn.clear();
-            for (AnswerSet an : answers.getAnswersets()) {
-                oldTurn.addAll(an.getAnswerSet());
+            if(!doSomething){
+                fold();
             }
         }
 
 
         // round 2
-        public void doAnAICardRemove(int currentPlayerValue, int currentValue) {
+        public void doAnAICardRemove(int currentPlayerValue) {
             Handler handler = initHandlerWithEncoding(DISCARDCARDS);
+            facts = new InputProgram();
             addWithOldFacts();
             handler.addProgram(facts);
             AnswerSets answers = null;
@@ -274,7 +272,12 @@ public class EnemyAI extends Player {
         }
     }
 
-    public interface OnPlateListener {
+    public void setOnIntelligenceListener(OnIntelligenceListener listener) {
+        this.aiListener = listener;
+    }
+
+    public interface OnIntelligenceListener {
         int getSumPlate();
+        // other data
     }
 }

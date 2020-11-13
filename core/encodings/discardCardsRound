@@ -1,1 +1,0 @@
-cardToDiscard(S,N) :- card(S,N), card(S2,N2), S!=S2, N!=N2.

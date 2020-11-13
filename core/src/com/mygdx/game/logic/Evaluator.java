@@ -155,8 +155,6 @@ public class Evaluator {
 
     public int calculatePoint(String typeOfHand, int highestCardNumber, Player player)
     {
-        if(player != null)
-            System.out.println("Player " + player.getName() + " " + typeOfHand + " " + highestCardNumber);
         return hands.get(typeOfHand) * cardRanks.get(highestCardNumber);
     }
 

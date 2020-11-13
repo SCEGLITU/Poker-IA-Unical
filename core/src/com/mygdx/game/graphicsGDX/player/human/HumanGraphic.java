@@ -10,7 +10,6 @@ import static com.mygdx.game.graphicsGDX.player.human.KeyboardHuman.*;
 public class HumanGraphic extends PlayerGraphic {
 
     public KeyboardHuman keyboard;
-    protected boolean printKeyboard = false;
 
     public HumanGraphic(Human player, int index) {
         super(player, index);
@@ -43,16 +42,10 @@ public class HumanGraphic extends PlayerGraphic {
 
     // return selected card
     public Card selectedCard(){
-        for(Card card: player.getCards())
-//        {
-//            Rectangle rectangleCard = Deck.getInstance().getCard(card).getBoundingRectangle();
-//            if(rectangleCard.contains(cursor.getX(), cursor.getY()))
-//                if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-//                    return card;
-//                }
-
-            if(listener.clickCard(card)){
+        for(Card card: player.getCards()) {
+            if (listener.clickCard(card)) {
                 return card;
+            }
         }
         return null;
     }
@@ -93,18 +86,21 @@ public class HumanGraphic extends PlayerGraphic {
         }
     }
 
+    public int getCurrentPlayerValue(){
+        return player.getCurrentPlayerValue();
+    }
+
     private OnCursorListener listener;
 
     public void setListener(OnCursorListener listener) {
         this.listener = listener;
     }
 
-    interface OnCursorListener{
+    public interface OnCursorListener{
         boolean intersectCard(Card card);
         void setXCursor(Card card);
         void setYCursor(Card card);
         boolean clickCard(Card card);
-        void getDiscardedCard(Card card);
         boolean clickSprite(Sprite sprite);
     }
 

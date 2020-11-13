@@ -92,8 +92,7 @@ public class Deck {
         return carte.get(carte.size()-1);
     }
 
-    public Sprite getCard(Card card)
-    {
+    public Sprite getCard(Card card) {
         return getCard(card.getNumber(), card.getSuite());
     }
 
