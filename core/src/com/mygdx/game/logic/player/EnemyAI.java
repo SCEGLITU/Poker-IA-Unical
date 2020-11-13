@@ -24,48 +24,79 @@ public class EnemyAI extends Player {
     private DLVManager dlvManager = new DLVManager();
     private OnIntelligenceListener aiListener;
 
+    private int round = 0;
+
     public EnemyAI(String name, int money) {
         super(name, money);
     }
 
     @Override
+    public void newGame(int initValue) {
+        super.newGame(initValue);
+        round = 0;
+    }
+
+    @Override
     public void move(int currentValue) {
-        dlvManager.doAnAIChoise(currentPlayerValue, currentValue);
+        if(round == 0)
+            dlvManager.doAnAIChoiceRoundOne(currentPlayerValue, currentValue);
+        else
+            dlvManager.doAnAIChoiceRoundThree(currentPlayerValue, currentValue);
     }
 
     @Override
     public void removeCard() {
+        round = 1;
         dlvManager.doAnAICardRemove(currentPlayerValue);
     }
 
     private class DLVManager {
         private List<String> oldTurn;
 
-        private String encodingNormalRound;
-        private String encodingChoiseRaise;
-        private String encodingDiscardCardsRound;
         private String pathDlv;
 
-        private ASPInputProgram normalRound;
+        private String encodingBluff    ;
+        private String encodingProfiling;
+        private String encodingSemiScore;
+        private String encodingNormalRound;
+        private String encodingChoiseRaise;
+        private String encodingChoiseRaise2;
+        private String encodingDiscardCardsRound;
+
+
+        private ASPInputProgram bluff;
         private ASPInputProgram choiceRaise;
+        private ASPInputProgram choiceRaise2;
         private ASPInputProgram discardCardsRound;
 
-        public static final int NORMALROUND  = 0;
-        public static final int CHOICERAISE  = 1;
-        public static final int DISCARDCARDS = 2;
+        public static final int BLUFF         = 0;
+        public static final int CHOICERAISE   = 1;
+        public static final int CHOICERAISE2  = 2;
+        public static final int DISCARDCARDS  = 3;
 
         private InputProgram facts;
 
         {
             setPathResources();
-            discardCardsRound = new ASPInputProgram();
-            discardCardsRound.addFilesPath(encodingDiscardCardsRound);
 
             choiceRaise = new ASPInputProgram();
+            choiceRaise.addFilesPath(encodingNormalRound);
             choiceRaise.addFilesPath(encodingChoiseRaise);
+            choiceRaise.addFilesPath(encodingProfiling);
+            choiceRaise.addFilesPath(encodingSemiScore);
 
-            normalRound = new ASPInputProgram();
-            normalRound.addFilesPath(encodingNormalRound);
+            discardCardsRound = new ASPInputProgram();
+            discardCardsRound.addFilesPath(encodingNormalRound);
+            discardCardsRound.addFilesPath(encodingSemiScore);
+            discardCardsRound.addFilesPath(encodingDiscardCardsRound);
+
+            choiceRaise2 = new ASPInputProgram();
+            choiceRaise2.addFilesPath(encodingNormalRound);
+            choiceRaise2.addFilesPath(encodingChoiseRaise2);
+            choiceRaise2.addFilesPath(encodingProfiling);
+
+            bluff = new ASPInputProgram();
+            bluff.addFilesPath(encodingBluff);
 
             oldTurn = new ArrayList<>();
         }
@@ -77,12 +108,20 @@ public class EnemyAI extends Player {
                                 + "/resources/main/dlv2").substring(5);
                 encodingNormalRound = "core/assets/encodings/normalRound.dlv";
                 encodingDiscardCardsRound = "core/assets/encodings/discardCardsRound.dlv";
-                encodingChoiseRaise = "core/assets/encodings/choiceRaise2.dlv";
+                encodingChoiseRaise = "core/assets/encodings/choiceRaise.dlv";
+                encodingChoiseRaise2 = "core/assets/encodings/choiceRaise2.dlv";
+                encodingBluff = "core/assets/encodings/bluff.dlv";
+                encodingProfiling = "core/assets/encodings/profiling.dlv";
+                encodingSemiScore = "core/assets/encodings/semiScore.dlv";
             } else {
                 pathDlv = "./desktop/build/resources/main/dlv2.win.x64_5";
                 encodingNormalRound = "./desktop/build/resources/main/encodings/normalRound.dlv";
                 encodingDiscardCardsRound = "./desktop/build/resources/main/encodings/discardCardsRound.dlv";
-                encodingChoiseRaise = "./desktop/build/resources/main/encodings/choiceRaise2.dlv";
+                encodingChoiseRaise = "./desktop/build/resources/main/encodings/choiceRaise.dlv";
+                encodingChoiseRaise2 = "./desktop/build/resources/main/encodings/choiceRaise2.dlv";
+                encodingBluff = "./desktop/build/resources/main/encodings/bluff.dlv";
+                encodingProfiling = "./desktop/build/resources/main/encodings/profiling.dlv";
+                encodingSemiScore = "./desktop/build/resources/main/encodings/semiScore.dlv";
             }
         }
 
@@ -90,11 +129,14 @@ public class EnemyAI extends Player {
             Handler handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
 
             switch (typeRound){
-                case NORMALROUND:
-                    handler.addProgram(normalRound);
+                case BLUFF:
+                    handler.addProgram(bluff);
                     break;
                 case CHOICERAISE:
                     handler.addProgram(choiceRaise);
+                    break;
+                case CHOICERAISE2:
+                    handler.addProgram(choiceRaise2);
                     break;
                 case DISCARDCARDS:
                     handler.addProgram(discardCardsRound);
@@ -105,7 +147,6 @@ public class EnemyAI extends Player {
         }
 
         private void addFactsCards() {
-            facts = new ASPInputProgram();
             try {
                 for (int i = 0; i < 5; i++) {
                     facts.addObjectInput(new Card(cards.get(i).suite, cards.get(i).number));
@@ -119,7 +160,6 @@ public class EnemyAI extends Player {
 
             int plate = aiListener.getSumPlate();
 
-            facts = new ASPInputProgram();
             facts.addProgram("myWallet(" + getMoney() + ").");
             facts.addProgram("plate(" + plate + ").");
             facts.addProgram("currentValue(" + currentValue + ").");
@@ -127,24 +167,6 @@ public class EnemyAI extends Player {
             facts.addProgram(String.format("confidence(%d).", 8));
             facts.addProgram(String.format("currentChecked(%d).", currentChecked));
 
-        }
-
-        private void addWithOldFacts() {
-            oldTurn.forEach(new Consumer<String>() {
-                @Override
-                public void accept(String s) {
-                    facts.addProgram(s + ".");
-                }
-            });
-        }
-
-        private void addOldAnswerSets(AnswerSets answers){
-            for (AnswerSet an : answers.getAnswersets()) {
-                for (String atom : an.getAnswerSet()) {
-                    facts.addProgram(atom + ".");
-                }
-                break;
-            }
         }
 
         private AnswerSets getOutput(Handler handler) throws Exception {
@@ -163,33 +185,26 @@ public class EnemyAI extends Player {
             return (AnswerSets) o;
         }
 
+        public void doAnAIChoiceRoundOne(int currentPlayerValue, int currentValue){
+            doAnAIChoise(currentPlayerValue, currentValue, CHOICERAISE);
+        }
+
+        public void doAnAIChoiceRoundThree(int currentPlayerValue, int currentValue){
+            doAnAIChoise(currentPlayerValue, currentValue, CHOICERAISE2);
+        }
+
+
         // round 1 e round 3
-        public void doAnAIChoise(int currentPlayerValue, int currentValue) {
-            Handler handler = initHandlerWithEncoding(NORMALROUND);
+        public void doAnAIChoise(int currentPlayerValue, int currentValue, int typeOfRound) {
+            Handler handler = initHandlerWithEncoding(typeOfRound);
+            facts = new ASPInputProgram();
+
             addFactsCards();
-
-            handler.addProgram(facts);
-
-            // manage output choiceRaise
-            AnswerSets answers = null;
-            try {
-                answers = getOutput(handler);
-                System.out.println("output dlv = " + answers.getAnswerSetsString());
-            } catch (Exception e) {
-                e.printStackTrace();
-                return;
-            }
-
-            oldTurn.clear();
-            for (AnswerSet an : answers.getAnswersets()) {
-                oldTurn.addAll(an.getAnswerSet());
-            }
-
-            handler = initHandlerWithEncoding(CHOICERAISE);
             addFactsMoney(currentValue);
-            addWithOldFacts();
+
             handler.addProgram(facts);
 
+            AnswerSets answers;
             try {
                 answers = getOutput(handler);
             } catch (Exception e) {
@@ -230,13 +245,14 @@ public class EnemyAI extends Player {
             }
         }
 
-
-        // round 2
         public void doAnAICardRemove(int currentPlayerValue) {
             Handler handler = initHandlerWithEncoding(DISCARDCARDS);
-            facts = new InputProgram();
-            addWithOldFacts();
+            facts = new ASPInputProgram();
+
+            addFactsCards();
+
             handler.addProgram(facts);
+
             AnswerSets answers = null;
             try {
                 answers = getOutput(handler);

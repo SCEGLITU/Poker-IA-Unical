@@ -1,47 +1,326 @@
-% input
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+%input
     % highestCard(N), highestCoupleCard(N)
-    % royalStraight, colorStraight, straight, poker(N), tris(N)
-    % couple(N), full(X, X1), doubleCouple(N1,N2)
-    % betsPointsAvg(X) = Bets/Points se è alto significa che bleffano tanto
-    % confidence(X) 1<=x<=10
-    % myWallet(X) plate(X) piatto e' quanto ci e' chiesto rialzare
+    % SORTED POINT LIST (?)
+    % royalStraight, colorStraight, poker(N), full(X, X1), color, straight
+    % tris(N), doubleCouple(N1,N2), couple(N), highestCard(N)
+    % currentChecked(X)
+    %END
+    % myWallet(X) plate(X), currentValue(X)  budget, piatto, currentValue(X)
 
 % output
     % check
-    % raise(X)
+    % raise(X) X is the sum will be raised
     % fold
 
-raise(20) :- highestCard(_).
+% tre livelli di rischio currentValue BANCO_BASSO, BANCO_MEDIO, BANCO_ALTO
+	% BANCO_BASSO  il piatto e' basso - > BANCO_ALTO  il piatto e' alto
+
+% tre livelli di rischio carte come valore CARTA_BASSA, CARTA_MEDIA, CARTA_ALTA
+	% CARTA_BASSA -> (2,3,4,5,6,7,8,9,10,11,12,13,1) -> CARTA_ALTA
+
+% tre livelli di rischio wallet WALLET_BASSO, WALLET_MEDIO, WALLET_ALTO
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% grouding scelta/notscelta su possibility
+	scelta(X) | notscelta(X) :- possibility(X).
+	possibility(check). possibility(fold). possibility(raise).
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% vincoli di "dominio"
+	% puo' esserci solo una scelta
+	:- not #count{X: scelta(X)}=1.
+
+	% se il valore corrente del piatto e' nullo non si puo' foldare?
+	:- notscelta(check), currentValue(0).
+
+	% non posso fare un check con non sufficienti soldi
+	:- check, myWallet(X), currentValue(Z), X<Z.
+
+	% non posso fare un raise più basso del (currentValue - currentchecked)
+	:- raise(X), X<0.
+
+	% defence --- if you can't pay the dealer, you must do fold
+	:- notscelta(fold), myWallet(X), currentValue(Z), X<Z.
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+%
+% WALLET
+	% WALLET_BASE
+	scelta(check):- currentValue(0).
+	:~ notscelta( fold), currentValue(C), myWallet(W), W = C, C!=0.		         [ 6 @ 1, fold]
+	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +   20.			     [ 5 @ 1, fold]
+	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +   50, W >= C +   20.  [ 2 @ 1, fold]
+	:~ notscelta(check), currentValue(C), myWallet(W), W < C +   50, W >= C +   20.  [ 1 @ 1,check]
+	% WALLET_MEDIO
+	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +  150, W >= C +   50.  [ 1 @ 1,  fold]
+	:~ notscelta(check), currentValue(C), myWallet(W), W < C +  150, W >= C +   50.  [ 1 @ 1, check]
+	:~ notscelta(check), currentValue(C), myWallet(W), W < C +  300, W >= C +  150.  [ 1 @ 1, check]
+	:~ notscelta(raise), currentValue(C), myWallet(W), W < C +  500, W >= C +  300.  [ 1 @ 1, raise]
+	% WALLET_ALTO
+	:~ notscelta(raise), currentValue(C), myWallet(W), W < C + 1000, W >= C +  500.   [ 1 @ 1,raise]
+	:~ notscelta(raise), currentValue(C), myWallet(W), W < C + 2000, W >= C + 1000.   [ 1 @ 1,raise]
+	:~ notscelta(raise), currentValue(C), myWallet(W), 				W >= C +  2000.   [ 1 @ 1,raise]
+
+% HIGHEST CARD
+% se non ho una particolare combinazione di carte
+
+	%myWallet(6070). currentValue(120). currentChecked(0). highestCard(1).
+
+	highestCard:- highestCard(_), not highestCoupleCard.
+
+	minVal(highestCard, 120):-highestCard.
+	maxVal(highestCard, 250):-highestCard.
+
+	% BANCO_BASSO 	 - promuovo check
+	:~ notscelta(check), highestCard, currentValue(Z), minVal(highestCard, MIN), Z < MIN.    [1 @ 1, check]
+
+	% BANCO_MEDIO - promuovo fold
+	% se il piatto e' alto
+	:~ notscelta(fold ), highestCard, currentValue(Z),
+	minVal(highestCard, MIN), maxVal(highestCard, MAX), Z >= MIN, Z <= MAX.    [1 @ 1,  fold]
+
+	% BANCO_ALTO 		 - promuovo fold
+	% se ho pochi soldi
+	:~ notscelta(fold ), highestCard, currentValue(Z), maxVal(highestCard, MAX), Z >  MAX.	[2 @ 1,  fold]
+
+%---------------------
+	% CARTA_BASSA
+	% non favorisco ne' raise ne' check
+	:~ notscelta(fold), highestCard, highestCard(N), N>1, N<5. 		[3 @ 1,  fold]
+
+	% CARTA_MEDIA
+	:~ notscelta(check), highestCard, highestCard(N), N>=5, N<10. 	[1 @ 1, check]
+	:~ notscelta( fold), highestCard, highestCard(N), N>=5, N<10. 	[1 @ 1,  fold]
 
 
-% straight
-% raise(W):- royalStraight,   plate(X), myWallet(W).
-% raise(W):- colorStraight,   plate(X), myWallet(W).
-% raise(W):- straight,        plate(X), myWallet(W).
+	% CARTA_ALTA
+	:~ notscelta(raise), highestCard, highestCard(N), N=1. 			[3 @ 1,  raise]
+	:~ notscelta(check), highestCard, highestCard(N), N>=10. 		[1 @ 1,  check]
 
 
-% highestCard
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% COUPLE
+ %myWallet(3890). currentValue(120). currentChecked(0). highestCard(12). couple(12). highestCoupleCard(12). highestCoupleCard.
 
-% betsPointsAvg     se bleffano poco/tanto
-% plate             se il piatto e' alto/basso
-% confidence        se e' "cattivo" o meno
-% mywallet          se hai tanti soldi
+	couple:- couple(_), not doubleCouple.
 
-% if I have a low card. <=7
-    % se ho uno schifo di carta
-%    fold:-  highestCard(N), N<=7, N!=1.
+	minVal(couple, 200):-couple.
+	maxVal(couple, 660):-couple.
 
-% if I have a high card 1 or >7
-    % se bleffano poco e il piatto e' basso e ho una carta "alta".
-%    check:- highestCard(N), N>7, plate(S), S < 60.
-%    check:- highestCard(N), N=1, plate(S), S < 60.
+	% BANCO_BASSO 	 - promuovo raise
+	% se il piatto e' basso
+	:~ notscelta(raise), couple, currentValue(Z), minVal(couple, MIN), Z < MIN. [2 @ 1, raise]
 
-    % se bleffano tanto e il piatto e' alto e ho una carta "alta".
-%    check:- highestCard(N), N>7, plate(S), S > 60, betsPointsAvg(A), A > 20.
-%    check:- highestCard(N), N=1, plate(S), S > 60, betsPointsAvg(A), A > 20.
+	% BANCO_MEDIO - promuovo check
+	% se il piatto non e' basso (intermedio)
+	:~ notscelta(check), couple, currentValue(Z),
+	minVal(couple, MIN), maxVal(couple, MAX), Z >= MIN, Z <= MAX.		[1 @ 1, check]
 
-% if I have a low couple <=7
-    % se il piatto e' basso e ho una coppia piu' piccola di 7
- %   raise(200-S):- couple(N), N<=7, plate(S), S < 200.
+	% BANCO_ALTO 		 - promuovo fold
+	% se il piatto e' alto
+	:~ notscelta( fold), couple, currentValue(Z), maxVal(couple, MAX), Z >  MAX. [3 @ 1,  fold]
 
-    % se bleffano poco e il piatto e' alto
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta( check), couple, highestCoupleCard(N), N>1, N<5. 	[1 @ 1,  check]
+	:~ notscelta(  fold), couple, highestCoupleCard(N), N>1, N<5. 	[1 @ 1,   fold]
+
+	% CARTA_MEDIA
+	:~ notscelta(check), couple, highestCoupleCard(N), N>=5, N<10. 	[1 @ 1, check]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), couple, highestCoupleCard(N), N =  1. 	[2 @ 1,  raise]
+	:~ notscelta(raise), couple, highestCoupleCard(N), N >=10. 	[1 @ 1,  raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% DOUBLE COUPLE
+	doubleCouple:- doubleCouple(_,_).
+
+	minVal(doubleCouple, 250):-doubleCouple.
+	maxVal(doubleCouple, 700):-doubleCouple.
+
+	% BANCO_BASSO 	 - promuovo raise
+	% se il piatto e' basso
+	:~ notscelta(raise), doubleCouple, currentValue(Z),
+						minVal(doubleCouple, MIN), Z < MIN.		[2 @ 1, raise]
+
+	% BANCO_MEDIO - promuovo check
+	% se il piatto non e' basso
+	:~ notscelta(check), doubleCouple, currentValue(Z),
+		minVal(doubleCouple, MIN), maxVal(doubleCouple, MAX), Z >= MIN, Z <= MAX.			[1 @ 1, check]
+
+	% BANCO_ALTO 		 - promuovo fold
+	% se il piatto e' veramente molto alto
+	:~ notscelta( fold), doubleCouple, currentValue(Z),
+		maxVal(doubleCouple, MAX), Z >  MAX.					[3 @ 1,  fold]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta(check), doubleCouple, highestCoupleCard(N), N>1, N<5. 	[1 @ 1, check]
+	:~ notscelta(raise), doubleCouple, highestCoupleCard(N), N>1, N<5. 	[1 @ 1, raise]
+
+	% CARTA_MEDIA
+	:~ notscelta(raise), doubleCouple, highestCoupleCard(N), N>=5, N<10. 	[1 @ 1, raise]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), doubleCouple, highestCoupleCard(N), N =  1. 	[2 @ 1, raise]
+	:~ notscelta(raise), doubleCouple, highestCoupleCard(N), N >=10. 	[1 @ 1, raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% TRIS
+	tris:- tris(_).
+
+	minVal(tris, 220):-tris.
+	maxVal(tris, 2000):-tris.
+
+	% BANCO_BASSO 	 - promuovo raise
+	:~ notscelta(raise), tris, currentValue(Z), minVal(tris, MIN), Z < MIN.		[2 @ 1, raise]
+
+	% BANCO_MEDIO - promuovo check
+	:~ notscelta(check), tris, currentValue(Z),
+		minVal(tris, MIN), maxVal(tris, MAX), Z >= MIN, Z <= MAX.		[1 @ 1, check]
+
+	% BANCO_ALTO 		 - promuovo check
+	:~ notscelta( check), tris, currentValue(Z),
+	maxVal(tris, MAX), Z >  MAX.	[3 @ 1,  check]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta(check), tris, highestCoupleCard(N), N>1, N<5. 	[1 @ 1, check]
+	:~ notscelta(raise), tris, highestCoupleCard(N), N>1, N<5. 	[1 @ 1, raise]
+
+	% CARTA_MEDIA
+	:~ notscelta(raise), tris, highestCoupleCard(N), N>=5, N<10. 	[1 @ 1, raise]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), tris, highestCoupleCard(N), N =  1. 	[3 @ 1, raise]
+	:~ notscelta(raise), tris, highestCoupleCard(N), N >=10. 	[3 @ 1, raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% POKER
+	poker :- poker(_).
+
+	minVal(poker, 500):- poker.
+
+	% BANCO_BASSO 	 - promuovo raise
+	:~ notscelta(raise), poker, currentValue(Z), minVal(poker, MIN), Z <  MIN. [2 @ 1, raise]
+
+	% BANCO_ALTO 		 - promuovo check
+	:~ notscelta(check), poker, currentValue(Z), minVal(poker, MIN), Z >= MIN. [1 @ 1, check]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta(raise), poker, highestCoupleCard(N), N>1, N<5. 	[1 @ 1, raise]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), poker, highestCoupleCard(N), N =  1. 	[5 @ 1, raise]
+	:~ notscelta(raise), poker, highestCoupleCard(N), N >=5. 	[3 @ 1, raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% FULL
+	full:- full(_,_).
+
+	minVal(full, 650):- full.
+
+	% BANCO_BASSO 	 - promuovo raise
+	:~ notscelta(raise), full, currentValue(Z), minVal(full, MIN), Z <  MIN. [2 @ 1, raise]
+
+	% BANCO_ALTO 		 - promuovo check
+	:~ notscelta(check), full, currentValue(Z), minVal(full, MIN), Z >= MIN. [4 @ 1, check]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta(raise), full, highestCoupleCard(N), N>1, N<5. 	[1 @ 1, raise]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), full, highestCoupleCard(N), N =  1. 	[5 @ 1, raise]
+	:~ notscelta(raise), full, highestCoupleCard(N), N >=5. 	[3 @ 1, raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% STRAIGHT
+
+	minVal(straight, 750):- straight, not colorStraight.
+	% BANCO_BASSO 	 - promuovo raise
+	:~ notscelta(raise), straight, currentValue(Z), minVal(straight, MIN), Z <  MIN.	[2 @1, raise]
+
+	% BANCO_MEDIO - promuovo check
+	:~ notscelta(check), straight, currentValue(Z), minVal(straight, MIN), Z >= MIN.	[1 @1, check]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta(raise), straight, highestCoupleCard(N), N>1, N<5. 	[1 @ 1, raise]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), straight, highestCoupleCard(N), N =  1. 	[3 @ 1, raise]
+	:~ notscelta(raise), straight, highestCoupleCard(N), N >=5. 	[3 @ 1, raise]
+
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% COLOR
+	minVal(color, 750):- color, not colorStraight.
+	% BANCO_BASSO 	 - promuovo raise
+	:~ notscelta(raise), color, currentValue(Z), minVal(color, MIN), Z <  MIN. [2 @ 1, raise]
+
+	% BANCO_MEDIO - promuovo check
+	:~ notscelta(check), color, currentValue(Z), minVal(color, MIN), Z >= MIN. [6 @ 1, check]
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta(raise), color, highestCoupleCard(N), N>1, N<5. 	[1 @ 1, raise]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), color, highestCoupleCard(N), N =  1. 	[3 @ 1, raise]
+	:~ notscelta(raise), color, highestCoupleCard(N), N >= 5. 	[3 @ 1, raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% COLOR STRAIGHT
+
+	minVal(colorStraight, 750):- colorStraight.
+	% BANCO_BASSO 	 - promuovo raise
+	:~ notscelta(raise), colorStraight, currentValue(Z), minVal(colorStraight, MIN), Z <  MIN. [2 @ 1, raise]
+
+	% BANCO_ALTO 	 - promuovo check
+	:~ notscelta(check), colorStraight, currentValue(Z), minVal(colorStraight, MIN), Z >= MIN. [6 @ 1, check]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta(raise), colorStraight, highestCoupleCard(N), N>1, N<5. [1 @ 1, raise]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), colorStraight, highestCoupleCard(N), N =  1. 	[3 @ 1, raise]
+	:~ notscelta(raise), colorStraight, highestCoupleCard(N), N >= 5. 	[3 @ 1, raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% ROYAL STRAIGHT
+	minVal(royalStraight, 800):-royalStraight.
+	% BANCO_BASSO 	 - promuovo raise
+	:~ notscelta(raise), royalStraight, currentValue(Z), minVal(royalStraight, MIN), Z <  MIN. [2 @ 1, raise]
+
+	% BANCO_ALTO 	 - promuovo check
+	:~ notscelta(check), royalStraight, currentValue(Z), minVal(royalStraight, MIN), Z >= MIN. [6 @ 1, check]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta(raise), royalStraight, highestCoupleCard(N), N>1, N<5. [1 @ 1, raise]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), royalStraight, highestCoupleCard(N), N =  1. 	[3 @ 1, raise]
+	:~ notscelta(raise), royalStraight, highestCoupleCard(N), N >= 5. 	[3 @ 1, raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+raise(B) :- scelta(raise), currentValue(CC), myWallet(W), minVal(X, MIN),
+				B = MIN - CC, W >= MIN - CC, B>0.
+raise(B) :- scelta(raise), currentValue(CC), myWallet(W), minVal(X, MIN),
+				B =        W, W <  MIN - CC, MIN!=CC, B>0.
+
+check  :- scelta(raise), currentValue(CC), myWallet(W), minVal(X, MIN),
+				MIN - CC=0.
+check    :- scelta(raise), currentChecked(CC), minVal(X, MIN), X = CC.
+check    :- scelta(raise),   currentValue(CC), minVal(X, MIN), X = CC.
+
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+check :- scelta(check).
+fold  :- scelta( fold).

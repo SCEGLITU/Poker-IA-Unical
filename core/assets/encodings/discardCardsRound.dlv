@@ -15,8 +15,6 @@ keep(S, N)|discard(S, N):- card(S,N).
 :- discard(_,_), color.
 :- discard(_,_), royalStraight.
 
-%MISS STRAIGHT
-
 :~ discard(_,N),  couple(N).			[20 @ 1, N]
 :~ discard(_,N),  doubleCouple(N,N2).	[20 @ 1, N]
 :~ discard(_,N2), doubleCouple(N,N2).	[20 @ 1, N]
@@ -51,7 +49,7 @@ semiStraight(S,N):-
 				card(S, N),
 				card(_, N + 1),
 				card(_, N + 2),
-				card(_, N + 3).
+				card(_, N + 3), not straight.
 semiStraight(S,N+1):- 
 				card(_, N),
 				card(S, N + 1),

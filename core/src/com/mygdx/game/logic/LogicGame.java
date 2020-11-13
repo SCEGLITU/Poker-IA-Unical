@@ -48,7 +48,6 @@ public class LogicGame {
 
     public void gameCycle(){
 
-        System.out.println("playerShift = " + playerShift);
         allFold();
 
         if(!blind) {
@@ -79,22 +78,22 @@ public class LogicGame {
 
     public void createPlayers()
     {
-        for(int i=0; i<3; i++)
-        players.add(new Enemy("LEFT_PLAYER", 4000));
+//        for(int i=0; i<3; i++)
+//        players.add(new Enemy("LEFT_PLAYER", 4000));
 
         plate.setCurrentValue(START_VALUE);
 
-//        for(int i=0; i<3; i++){
-//            EnemyAI enemyAI = new EnemyAI("RIGHT_PLAYER", 4000);
-//            enemyAI.setOnIntelligenceListener(new EnemyAI.OnIntelligenceListener() {
-//                @Override
-//                public int getSumPlate() {
-//                    return plate.getCash();
-//                }
-//            });
-//
-//            players.add(enemyAI);
-//        }
+        for(int i=0; i<3; i++){
+            EnemyAI enemyAI = new EnemyAI("RIGHT_PLAYER", 4000);
+            enemyAI.setOnIntelligenceListener(new EnemyAI.OnIntelligenceListener() {
+                @Override
+                public int getSumPlate() {
+                    return plate.getCash();
+                }
+            });
+
+            players.add(enemyAI);
+        }
 
         for(int i=0; i<3; i++){
             players.get(i).setName("ENEMY-" + i);

@@ -17,7 +17,7 @@ royalStraight :-
                  card(S, 1).
 
 % A straight flush is a straight (5 cards in order, such as 5-6-7-8-9) that are all of the same suit
-colorStraight :- straight, color.
+colorStraight :- straight, color, not royalStraight.
 
 % A straight is 5 cards in order, such as 5-6-7-8-9
 straight :-
