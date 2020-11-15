@@ -1,0 +1,32 @@
+% grouding scelta/notscelta su possibility
+	scelta(X) | notscelta(X) :- possibility(X).
+	possibility(check). possibility(fold). possibility(raise).
+
+% vincoli di "dominio"
+	% puo' esserci solo una scelta
+    :- not #count{X: scelta(X)}=1.
+
+    % se il valore corrente del piatto e' nullo non si puo' foldare?
+	:- notscelta(check), currentValue(0).
+
+	% non posso fare un check con non sufficienti soldi
+	:- check, myWallet(X), currentValue(Z), X<Z.
+
+	% non posso fare un raise più basso del (currentValue - currentchecked)
+	:- raise(X), X<0.
+
+	% defence --- if you can't pay the dealer, you must do fold
+	:- notscelta(fold), myWallet(X), currentValue(Z), X<Z.
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+%
+
+:- notscelta( fold), not highestCoupleCard, currentValue(CC), CC>3000.
+:- notscelta( fold), not highestCoupleCard, currentValue(CC), CC>3000.
+:~ notscelta( raise), currentValue(CC), CC<1000. [2@1, raise]
+:~ notscelta( check), currentValue(CC), CC<2000. [1@1, check]
+:~ scelta( raise), currentValue(CC), CC>=2000. [3@1, raise]
+:~ notscelta( check), currentValue(CC), CC>=2000. [1@1, check]
+raise(300):- scelta( raise).
+
+check :- scelta(check).
+fold  :- scelta( fold).

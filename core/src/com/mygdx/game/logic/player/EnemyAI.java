@@ -15,6 +15,7 @@ import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,10 +26,9 @@ public class EnemyAI extends Player {
     private OnIntelligenceListener aiListener;
 
     private int round = 0;
+    private boolean isBluff = false;
 
-    public EnemyAI(String name, int money) {
-        super(name, money);
-    }
+    public EnemyAI(String name, int money) { super(name, money); }
 
     @Override
     public void newGame(int initValue) {
@@ -38,6 +38,7 @@ public class EnemyAI extends Player {
 
     @Override
     public void move(int currentValue) {
+
         if(round == 0)
             dlvManager.doAnAIChoiceRoundOne(currentPlayerValue, currentValue);
         else
@@ -75,7 +76,6 @@ public class EnemyAI extends Player {
         public static final int DISCARDCARDS  = 3;
 
         private InputProgram facts;
-
         {
             setPathResources();
 
@@ -186,11 +186,20 @@ public class EnemyAI extends Player {
         }
 
         public void doAnAIChoiceRoundOne(int currentPlayerValue, int currentValue){
-            doAnAIChoise(currentPlayerValue, currentValue, CHOICERAISE);
+            isBluff=false;
+            Random r= new Random();
+            if(r.nextInt(10)==0) {
+                isBluff=true;
+                doAnAIChoise(currentPlayerValue, currentValue, BLUFF);
+            }else
+                doAnAIChoise(currentPlayerValue, currentValue, CHOICERAISE);
         }
 
         public void doAnAIChoiceRoundThree(int currentPlayerValue, int currentValue){
-            doAnAIChoise(currentPlayerValue, currentValue, CHOICERAISE2);
+            if(!isBluff)
+                doAnAIChoise(currentPlayerValue, currentValue, CHOICERAISE2);
+            else
+                doAnAIChoise(currentPlayerValue, currentValue, BLUFF);
         }
 
 
@@ -218,14 +227,19 @@ public class EnemyAI extends Player {
                 Pattern patternRaise = Pattern.compile("raise\\((\\d+)\\)");
                 Matcher matcher;
                 Integer raiseSum = null;
-
-
+                if(isBluff)
+                    System.out.println("BLUFF");;
                 for (String atom : an.getAnswerSet()) {
                     //        System.out.println(atom);
                     matcher = patternRaise.matcher(atom);
 
                     if (matcher.find()) {
                         raiseSum = Integer.parseInt(matcher.group(1));
+                        if(isBluff){
+                            Random r = new Random();
+                            int tmp = r.nextInt(1000);
+                            raiseSum = raiseSum + (tmp - (tmp%10));
+                        }
                         raise(raiseSum, currentValue);
                         doSomething = true;
                     }
@@ -280,7 +294,8 @@ public class EnemyAI extends Player {
                         else if (str.contains("CLUBS"))
                             s = Suite.CLUBS;
                         Card card = new Card((s), Integer.parseInt(matcher.group(2)));
-                        rmv.add(card);
+                        if(!isBluff)
+                            rmv.add(card);
                     }
                 }
             }
