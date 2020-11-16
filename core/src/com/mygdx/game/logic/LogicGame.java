@@ -10,6 +10,7 @@ import com.mygdx.game.logic.player.Player;
 import it.unical.mat.embasp.base.Handler;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LogicGame {
 
@@ -23,6 +24,7 @@ public class LogicGame {
     boolean blind=false;
     private int playerShift = 0;
     private int round = 1;
+    private int winner = -1;
     static final public int NUM_OF_PLAYERS = 4;
     static final public int NUM_OF_CARDS = 5;
 
@@ -89,6 +91,39 @@ public class LogicGame {
                 @Override
                 public int getSumPlate() {
                     return plate.getCash();
+                }
+
+                @Override
+                public int getSizePlayers() {
+                    return players.size();
+                }
+
+
+                @Override
+                public boolean isFold(int index) {
+                    return players.get(index).isFold();
+                }
+
+                @Override
+                public int getMoneyBet(int index) {
+                    return players.get(index)
+                            .getCurrentOnPlate();
+                }
+
+                @Override
+                public int getMoneyBetOnRound(int index) {
+                    return players.get(index)
+                            .getCurrentChecked();
+                }
+
+                @Override
+                public int getIndexPlayerWinner() {
+                    return winner;
+                }
+
+                @Override
+                public int getPointWinnerPlayer() {
+                    return evaluator.getPoint(players.get(winner));
                 }
             });
 
@@ -160,13 +195,15 @@ public class LogicGame {
                 round = 1;
                 blind = false;
 
+                plate.setCurrentValue(START_VALUE);
+
                 setAllCardForAllPlayer();
             }
         }
     }
 
     private void win(){
-        int winner = evaluator.getWinner();
+        winner = evaluator.getWinner();
         int moneyWinner = players.get(winner).getMoney();
 
         players.get(winner).setMoney(

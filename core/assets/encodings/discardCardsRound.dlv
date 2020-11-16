@@ -35,11 +35,11 @@ keep(S, N)|discard(S, N):- card(S,N).
 :~ discard(_,N), highestCard(N),   N=1, not highestCoupleCard.			[20 @ 1, N]
 :~ card(S,N), keep(S,N), not highestCoupleCard, highestCard(N1), N!=N1, not semiStraight.	[  2 @ 1, N]
 
-:~ not semiStraight(S,N), keep   (S,N), semiStraight. [50@ 1, N]
+:~ not semiStraight(S,N), keep   (S,N), semiStraight. [50@ 1]
 :~     semiStraight(S,N), discard(S,N).				  [20@ 1, N]
 
-:~ semiColorOne(S), keep(S1,_), S1!=S.			  [100 @ 1]
-:~ semiColorTwo(S), keep(S1,_), S1!=S.			   [15 @ 1]
+:~ semiColorOne(S), discard(S,_).			   [10 @ 1]
+:~ semiColorTwo(S), discard(S,_).			   [5 @ 1]
 
 semiStraight:- semiStraight(_,_).
 

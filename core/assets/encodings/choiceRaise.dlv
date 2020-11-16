@@ -52,11 +52,13 @@
 	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +   20.			     [ 5 @ 1, fold]
 	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +   50, W >= C +   20.  [ 2 @ 1, fold]
 	:~ notscelta(check), currentValue(C), myWallet(W), W < C +   50, W >= C +   20.  [ 1 @ 1,check]
+
 	% WALLET_MEDIO
 	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +  150, W >= C +   50.  [ 1 @ 1,  fold]
 	:~ notscelta(check), currentValue(C), myWallet(W), W < C +  150, W >= C +   50.  [ 1 @ 1, check]
 	:~ notscelta(check), currentValue(C), myWallet(W), W < C +  300, W >= C +  150.  [ 1 @ 1, check]
 	:~ notscelta(raise), currentValue(C), myWallet(W), W < C +  500, W >= C +  300.  [ 1 @ 1, raise]
+
 	% WALLET_ALTO
 	:~ notscelta(raise), currentValue(C), myWallet(W), W < C + 1000, W >= C +  500.   [ 1 @ 1,raise]
 	:~ notscelta(raise), currentValue(C), myWallet(W), W < C + 2000, W >= C + 1000.   [ 1 @ 1,raise]
@@ -103,7 +105,7 @@
 % COUPLE
  %myWallet(3890). currentValue(120). currentChecked(0). highestCard(12). couple(12). highestCoupleCard(12). highestCoupleCard.
 
-	couple:- couple(_), not doubleCouple.
+	couple:- couple(_), not doubleCouple, not full.
 
 	minVal(couple, 200):-couple.
 	maxVal(couple, 660):-couple.
@@ -169,7 +171,7 @@
 
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 % TRIS
-	tris:- tris(_).
+	tris:- tris(_), not full.
 
 	minVal(tris, 220):-tris.
 	maxVal(tris, 2000):-tris.

@@ -16,7 +16,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,22 +26,70 @@ public class EnemyAI extends Player {
 
     private int round = 0;
     private boolean isBluff = false;
+    protected int numberGame = 0;
 
-    public EnemyAI(String name, int money) { super(name, money); }
+    private List<PlayerInfo> players;
+
+    static int RANDOM_SEED = 1;
+    int randomSeed = RANDOM_SEED;
+
+    public EnemyAI(String name, int money) { super(name, money);
+        randomSeed = (RANDOM_SEED *= 2);
+    }
 
     @Override
     public void newGame(int initValue) {
         super.newGame(initValue);
+        numberGame++;
         round = 0;
+        isBluff=false;
+        if(numberGame > 1) {
+            countAboutLastGame();
+        }
+    }
+
+    private void countAboutLastGame() {
+        createArrayPlayers();
+
+        PlayerInfo winner = players.get(aiListener.getIndexPlayerWinner());
+        winner.gameWin++;
+        winner.pointsWin += aiListener.getPointWinnerPlayer();
+        winner.moneyWin  += winner.actuallyMoneyBet;
+
+        for(PlayerInfo playerInfo:players){
+            playerInfo.moneyBet += playerInfo.actuallyMoneyBet;
+            playerInfo.actuallyMoneyBet = 0;
+            playerInfo.avgMoneyBet = playerInfo.moneyBet/(double)numberGame;
+        }
+    }
+
+    private void createArrayPlayers() {
+        if(players == null){
+            players = new ArrayList<>();
+            for(int i = 0; i < aiListener.getSizePlayers(); i++) {
+                players.add(new PlayerInfo());
+            }
+        }
     }
 
     @Override
     public void move(int currentValue) {
 
+        countAboutShift();
+
         if(round == 0)
             dlvManager.doAnAIChoiceRoundOne(currentPlayerValue, currentValue);
         else
             dlvManager.doAnAIChoiceRoundThree(currentPlayerValue, currentValue);
+    }
+
+    private void countAboutShift() {
+        createArrayPlayers();
+        for(int i=0; i<players.size(); i++){
+            players.get(i).actuallyMoneyBet = aiListener.getMoneyBet(i);
+            players.get(i).actuallyMoneyBetRound =
+                    aiListener.getMoneyBetOnRound(i);
+        }
     }
 
     @Override
@@ -51,8 +98,8 @@ public class EnemyAI extends Player {
         dlvManager.doAnAICardRemove(currentPlayerValue);
     }
 
+
     private class DLVManager {
-        private List<String> oldTurn;
 
         private String pathDlv;
 
@@ -60,10 +107,9 @@ public class EnemyAI extends Player {
         private String encodingProfiling;
         private String encodingSemiScore;
         private String encodingNormalRound;
-        private String encodingChoiseRaise;
-        private String encodingChoiseRaise2;
+        private String encodingChoiceRaise;
+        private String encodingChoiceRaise2;
         private String encodingDiscardCardsRound;
-
 
         private ASPInputProgram bluff;
         private ASPInputProgram choiceRaise;
@@ -76,12 +122,13 @@ public class EnemyAI extends Player {
         public static final int DISCARDCARDS  = 3;
 
         private InputProgram facts;
+
         {
             setPathResources();
 
             choiceRaise = new ASPInputProgram();
             choiceRaise.addFilesPath(encodingNormalRound);
-            choiceRaise.addFilesPath(encodingChoiseRaise);
+            choiceRaise.addFilesPath(encodingChoiceRaise);
             choiceRaise.addFilesPath(encodingProfiling);
             choiceRaise.addFilesPath(encodingSemiScore);
 
@@ -92,13 +139,11 @@ public class EnemyAI extends Player {
 
             choiceRaise2 = new ASPInputProgram();
             choiceRaise2.addFilesPath(encodingNormalRound);
-            choiceRaise2.addFilesPath(encodingChoiseRaise2);
+            choiceRaise2.addFilesPath(encodingChoiceRaise2);
             choiceRaise2.addFilesPath(encodingProfiling);
 
             bluff = new ASPInputProgram();
             bluff.addFilesPath(encodingBluff);
-
-            oldTurn = new ArrayList<>();
         }
 
         private void setPathResources() {
@@ -108,8 +153,8 @@ public class EnemyAI extends Player {
                                 + "/resources/main/dlv2").substring(5);
                 encodingNormalRound = "core/assets/encodings/normalRound.dlv";
                 encodingDiscardCardsRound = "core/assets/encodings/discardCardsRound.dlv";
-                encodingChoiseRaise = "core/assets/encodings/choiceRaise.dlv";
-                encodingChoiseRaise2 = "core/assets/encodings/choiceRaise2.dlv";
+                encodingChoiceRaise = "core/assets/encodings/choiceRaise.dlv";
+                encodingChoiceRaise2 = "core/assets/encodings/choiceRaise2.dlv";
                 encodingBluff = "core/assets/encodings/bluff.dlv";
                 encodingProfiling = "core/assets/encodings/profiling.dlv";
                 encodingSemiScore = "core/assets/encodings/semiScore.dlv";
@@ -117,8 +162,8 @@ public class EnemyAI extends Player {
                 pathDlv = "./desktop/build/resources/main/dlv2.win.x64_5";
                 encodingNormalRound = "./desktop/build/resources/main/encodings/normalRound.dlv";
                 encodingDiscardCardsRound = "./desktop/build/resources/main/encodings/discardCardsRound.dlv";
-                encodingChoiseRaise = "./desktop/build/resources/main/encodings/choiceRaise.dlv";
-                encodingChoiseRaise2 = "./desktop/build/resources/main/encodings/choiceRaise2.dlv";
+                encodingChoiceRaise = "./desktop/build/resources/main/encodings/choiceRaise.dlv";
+                encodingChoiceRaise2 = "./desktop/build/resources/main/encodings/choiceRaise2.dlv";
                 encodingBluff = "./desktop/build/resources/main/encodings/bluff.dlv";
                 encodingProfiling = "./desktop/build/resources/main/encodings/profiling.dlv";
                 encodingSemiScore = "./desktop/build/resources/main/encodings/semiScore.dlv";
@@ -127,6 +172,8 @@ public class EnemyAI extends Player {
 
         private Handler initHandlerWithEncoding(int typeRound) {
             Handler handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
+
+            // handler.addProgram(domain);
 
             switch (typeRound){
                 case BLUFF:
@@ -160,13 +207,42 @@ public class EnemyAI extends Player {
 
             int plate = aiListener.getSumPlate();
 
-            facts.addProgram("myWallet(" + getMoney() + ").");
-            facts.addProgram("plate(" + plate + ").");
-            facts.addProgram("currentValue(" + currentValue + ").");
-            facts.addProgram(String.format("betsPointsAvg(%d).", 15));
-            facts.addProgram(String.format("confidence(%d).", 8));
+            facts.addProgram(String.format("myWallet(%d).", getMoney()));
+            facts.addProgram(String.format("plate(%d).", plate));
+            facts.addProgram(String.format("currentValue(%d).", currentValue));
+//            facts.addProgram(String.format("confidence(%d).", 8));
             facts.addProgram(String.format("currentChecked(%d).", currentChecked));
 
+        }
+
+        private void addFactsProfilesPlayers(){
+            for(int i=0; i<players.size(); i++){
+                if(!aiListener.isFold(i)){
+                    addFactProfilePlayer(players.get(i), i);
+                }
+            }
+        }
+
+        private void addFactProfilePlayer(PlayerInfo playerInfo, int index){
+            int moneyBluff = (int) (playerInfo.avgMoneyBet * 1.5);
+            int estimatedPoints = playerInfo.actuallyMoneyBet
+                    *(playerInfo.moneyWin == 0?0:
+                            playerInfo.pointsWin/playerInfo.moneyWin
+            );
+            
+            facts.addProgram(String.format("avgMoneyBet     (%d, %d).", index, (int)playerInfo.avgMoneyBet));
+            facts.addProgram(String.format("gameWin         (%d, %d).", index, playerInfo.gameWin));
+            facts.addProgram(String.format("pointsWin       (%d, %d).", index, playerInfo.pointsWin));
+            facts.addProgram(String.format("moneyBet        (%d, %d).", index, playerInfo.moneyBet));
+            facts.addProgram(String.format("moneyWin        (%d, %d).", index, playerInfo.moneyWin));
+            facts.addProgram(String.format("actuallyMoneyBet(%d, %d).", index, playerInfo.actuallyMoneyBet));
+            facts.addProgram(String.format("actuallyMoneyBetRound(%d, %d)."
+                    , index, playerInfo.actuallyMoneyBetRound));
+
+            facts.addProgram(String.format("moneyBluff      (%d, %d).", index, moneyBluff));
+            if(playerInfo.moneyWin != 0)
+                facts.addProgram(String.format("estimatedPoints (%d, %d).", index, estimatedPoints));
+            facts.addProgram(String.format("game      (%d).", numberGame));
         }
 
         private AnswerSets getOutput(Handler handler) throws Exception {
@@ -186,9 +262,8 @@ public class EnemyAI extends Player {
         }
 
         public void doAnAIChoiceRoundOne(int currentPlayerValue, int currentValue){
-            isBluff=false;
-            Random r= new Random();
-            if(r.nextInt(10)==0) {
+            Random r = new Random(System.currentTimeMillis() + randomSeed);
+            if(r.nextInt(10) == 0 || isBluff) {
                 isBluff=true;
                 doAnAIChoise(currentPlayerValue, currentValue, BLUFF);
             }else
@@ -196,6 +271,7 @@ public class EnemyAI extends Player {
         }
 
         public void doAnAIChoiceRoundThree(int currentPlayerValue, int currentValue){
+            System.out.println("isBluff = " + isBluff);
             if(!isBluff)
                 doAnAIChoise(currentPlayerValue, currentValue, CHOICERAISE2);
             else
@@ -210,6 +286,7 @@ public class EnemyAI extends Player {
 
             addFactsCards();
             addFactsMoney(currentValue);
+            addFactsProfilesPlayers();
 
             handler.addProgram(facts);
 
@@ -309,6 +386,13 @@ public class EnemyAI extends Player {
 
     public interface OnIntelligenceListener {
         int getSumPlate();
-        // other data
+        int getSizePlayers();
+
+        boolean isFold(int index);
+        int getMoneyBet(int index);
+        int getMoneyBetOnRound(int index);
+
+        int getIndexPlayerWinner();
+        int getPointWinnerPlayer();
     }
 }

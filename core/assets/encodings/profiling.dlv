@@ -1,0 +1,15 @@
+% input
+    % in input facts P is identifies the Player
+    % avgMoneyBet           (P,  A)  A is moneyBet / numberGame
+    % gameWin               (P, GW) GW is the number of the game won by P
+    % pointsWin             (P, PW) PW is the number of points won by P
+    % moneyBet              (P, MB) MB are the money bet in all the games by P
+    % actuallyMoneyBet      (P,  M)  M is the sum of money bet in the actually game
+    % actuallyMoneyBetRound (P, MR) MR is the sum of money bet in the actually round
+    % moneyBluff            (P,  B)  B is an hypothetical upper bound of bet of P
+    % estimatedPoints       (P,  E)  E is the sum estimated of points that P may has in proportion
+    %                                    of actuallyMoneyBet
+    % game                  (N)      N is the number of the played game
+
+% dominio
+    evaluable :- game(N), N>3.

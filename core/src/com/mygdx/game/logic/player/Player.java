@@ -177,6 +177,10 @@ public abstract class Player {
         return currentPlayerValue;
     }
 
+    public int getCurrentOnPlate() {
+        return currentOnPlate;
+    }
+
     private OnActionListerner onActionListerner;
 
     public void setOnActionListerner(OnActionListerner onActionListerner){
