@@ -85,7 +85,7 @@ public class LogicGame {
 
         plate.setCurrentValue(START_VALUE);
 
-        for(int i=0; i<3; i++){
+        for(int i=0; i<4; i++){
             EnemyAI enemyAI = new EnemyAI("RIGHT_PLAYER", 4000);
             enemyAI.setOnIntelligenceListener(new EnemyAI.OnIntelligenceListener() {
                 @Override
@@ -130,18 +130,18 @@ public class LogicGame {
             players.add(enemyAI);
         }
 
-        for(int i=0; i<3; i++){
+        for(int i=0; i<4; i++){
             players.get(i).setName("ENEMY-" + i);
             players.get(i).setOnActionListerner(new PlayerListener());
         }
 
         // -----------------------------------------------
-
-        Human human = new Human("SONY", 4000);
-        human.setOnActionListerner  (new PlayerListener());
-        human.setOnHumanListener    (new HumanListener(human));
-
-        players.add(human);
+//
+//        Human human = new Human("SONY", 4000);
+//        human.setOnActionListerner  (new PlayerListener());
+//        human.setOnHumanListener    (new HumanListener(human));
+//
+//        players.add(human);
     }
 
     public void setAllCardForAllPlayer(){
@@ -209,6 +209,8 @@ public class LogicGame {
         players.get(winner).setMoney(
                 moneyWinner + plate.getCash()
                 );
+
+        plate.clear();
 
         listener.finishRound(players.get(winner).getName());
     }

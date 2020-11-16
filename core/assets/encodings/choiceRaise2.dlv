@@ -29,9 +29,12 @@
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 % vincoli di "dominio"
 	% puo' esserci solo una scelta
-	:- not #count{X: scelta(X)}=1.
+    :- not #count{X: scelta(X)}=1.
 
-	% se il valore corrente del piatto e' nullo non si puo' foldare?
+    % non puoi scegliere fold se hai gia' pagato il banco
+    :- scelta(fold), currentValue(CC), currentChecked(X), CC = X.
+
+    % se il valore corrente del piatto e' nullo non si puo' foldare?
 	:- notscelta(check), currentValue(0).
 
 	% non posso fare un check con non sufficienti soldi
@@ -41,8 +44,7 @@
 	:- raise(X), X<0.
 
 	% defence --- if you can't pay the dealer, you must do fold
-	:- notscelta(fold), myWallet(X), currentValue(Z), X<Z.
-
+	:- notscelta(fold), myWallet(X), currentValue(Z), currentChecked(X), X < Z-X.
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % WALLET 
@@ -103,7 +105,7 @@
 % COUPLE
  %myWallet(3890). currentValue(120). currentChecked(0). highestCard(12). couple(12). highestCoupleCard(12). highestCoupleCard.
 	
-	couple:- couple(_), not doubleCouple.
+	couple:- couple(_), not doubleCouple, not full.
 
 	minVal(couple, 200):-couple.
 	maxVal(couple, 660):-couple.
@@ -169,7 +171,7 @@
 
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 % TRIS
-	tris:- tris(_).
+	tris:- tris(_), not full.
 
 	minVal(tris, 220):-tris.
 	maxVal(tris, 2000):-tris.
@@ -315,7 +317,7 @@ raise(B) :- scelta(raise), currentValue(CC), myWallet(W), minVal(X, MIN),
 				B =        W, W <  MIN - CC, MIN!=CC, B>0.
 
 check  :- scelta(raise), currentValue(CC), myWallet(W), minVal(X, MIN), 
-				MIN - CC=0.
+				MIN - CC = 0.
 check    :- scelta(raise), currentChecked(CC), minVal(X, MIN), X = CC.
 check    :- scelta(raise),   currentValue(CC), minVal(X, MIN), X = CC.
 

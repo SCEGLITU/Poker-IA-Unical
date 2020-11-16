@@ -1,3 +1,95 @@
-% semiStraight
-% semiColor
-% semiRoyalStraight
+% straight :- card(_, 10), card(_, 11), card(_, 12), card(_, 13), card(_,  1).
+
+
+semiStraight:- semiStraight(_,_).
+
+semiStraight(S,N):-
+				card(S, N),
+				card(_, N + 1),
+				card(_, N + 2),
+				card(_, N + 3), not straight.
+semiStraight(S,N+1):-
+				card(_, N),
+				card(S, N + 1),
+				card(_, N + 2),
+				card(_, N + 3), not straight.
+semiStraight(S,N+2):-
+				card(_, N),
+				card(_, N + 1),
+				card(S, N + 2),
+				card(_, N + 3), not straight.
+semiStraight(S,N+3):-
+				card(_, N),
+				card(_, N + 1),
+				card(_, N + 2),
+				card(S, N + 3), not straight.
+%------------------------------------------
+semiStraight(S,N):-
+				card(S, N),
+				card(_, N + 2),
+				card(_, N + 3),
+				card(_, N + 4), not straight.
+semiStraight(S,N+2):-
+				card(_, N),
+				card(S, N + 2),
+				card(_, N + 3),
+				card(_, N + 4), not straight.
+semiStraight(S,N+3):-
+				card(_, N),
+				card(_, N + 2),
+				card(S, N + 3),
+				card(_, N + 4), not straight.
+semiStraight(S,N+4):-
+				card(_, N),
+				card(_, N + 2),
+				card(_, N + 3),
+				card(S, N + 4), not straight.
+%------------------------------------------
+semiStraight(S,N):-
+				card(S, N),
+				card(_, N + 1),
+				card(_, N + 3),
+				card(_, N + 4), not straight.
+semiStraight(S,N+1):-
+				card(_, N),
+				card(S, N + 1),
+				card(_, N + 3),
+				card(_, N + 4), not straight.
+semiStraight(S,N+3):-
+				card(_, N),
+				card(_, N + 1),
+				card(S, N + 3),
+				card(_, N + 4), not straight.
+semiStraight(S,N+4):-
+				card(_, N),
+				card(_, N + 1),
+				card(_, N + 3),
+				card(S, N + 4), not straight.
+%------------------------------------------
+semiStraight(S,N):-
+				card(S, N),
+				card(_, N + 1),
+				card(_, N + 2),
+				card(_, N + 4), not straight.
+semiStraight(S,N+1):-
+				card(_, N),
+				card(S, N + 1),
+				card(_, N + 2),
+				card(_, N + 4), not straight.
+semiStraight(S,N+2):-
+				card(_, N),
+				card(_, N + 1),
+				card(S, N + 2),
+				card(_, N + 4), not straight.
+semiStraight(S,N+4):-
+				card(_, N),
+				card(_, N + 1),
+				card(_, N + 2),
+				card(S, N + 4), not straight.
+%------------------------------------------
+
+% semiColorOne
+semiColorOne(S1) :- #count{A: card(S, A), S=S1} = 4, card(S1,_).
+
+% semiColorTwo
+semiColorTwo(S1) :- #count{A: card(S, A), S=S1} = 3, card(S1,_).

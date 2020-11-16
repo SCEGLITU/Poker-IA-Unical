@@ -29,9 +29,12 @@
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 % vincoli di "dominio"
 	% puo' esserci solo una scelta
-	:- not #count{X: scelta(X)}=1.
+    :- not #count{X: scelta(X)}=1.
 
-	% se il valore corrente del piatto e' nullo non si puo' foldare?
+    % non puoi scegliere fold se hai gia' pagato il banco
+    :- scelta(fold), currentValue(CC), currentChecked(X), CC = X.
+
+    % se il valore corrente del piatto e' nullo non si puo' foldare?
 	:- notscelta(check), currentValue(0).
 
 	% non posso fare un check con non sufficienti soldi
@@ -41,8 +44,7 @@
 	:- raise(X), X<0.
 
 	% defence --- if you can't pay the dealer, you must do fold
-	:- notscelta(fold), myWallet(X), currentValue(Z), X<Z.
-
+	:- notscelta(fold), myWallet(X), currentValue(Z), currentChecked(X), X < Z-X.
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % WALLET

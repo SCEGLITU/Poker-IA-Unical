@@ -13,3 +13,7 @@
 
 % dominio
     evaluable :- game(N), N>3.
+
+bleffatore(P) :- notscelta(check), moneyBluff(P, B), actuallyMoneyBetRound(P, C), C > B, evaluable.
+
+:~ scelta(fold), moneyBluff(P, B), actuallyMoneyBetRound(P, C), C > B, evaluable. [4@1, fold]

@@ -43,9 +43,6 @@ public class EnemyAI extends Player {
         numberGame++;
         round = 0;
         isBluff=false;
-        if(numberGame > 1) {
-            countAboutLastGame();
-        }
     }
 
     private void countAboutLastGame() {
@@ -74,6 +71,10 @@ public class EnemyAI extends Player {
 
     @Override
     public void move(int currentValue) {
+
+        if(numberGame > 1) {
+            countAboutLastGame();
+        }
 
         countAboutShift();
 
@@ -143,6 +144,7 @@ public class EnemyAI extends Player {
             choiceRaise2.addFilesPath(encodingProfiling);
 
             bluff = new ASPInputProgram();
+            bluff.addFilesPath(encodingNormalRound);
             bluff.addFilesPath(encodingBluff);
         }
 
@@ -263,7 +265,7 @@ public class EnemyAI extends Player {
 
         public void doAnAIChoiceRoundOne(int currentPlayerValue, int currentValue){
             Random r = new Random(System.currentTimeMillis() + randomSeed);
-            if(r.nextInt(10) == 0 || isBluff) {
+            if(r.nextInt(30) == 0 || isBluff) {
                 isBluff=true;
                 doAnAIChoise(currentPlayerValue, currentValue, BLUFF);
             }else
@@ -316,8 +318,15 @@ public class EnemyAI extends Player {
                             Random r = new Random();
                             int tmp = r.nextInt(1000);
                             raiseSum = raiseSum + (tmp - (tmp%10));
+
+                            if(raiseSum + (currentValue - currentChecked) > money){
+                                raiseSum = money - raiseSum;
+                            }
                         }
-                        raise(raiseSum, currentValue);
+                        if(raiseSum <= currentValue)
+                            check(currentValue);
+                        else
+                            raise(raiseSum, currentValue);
                         doSomething = true;
                     }
                     if (atom.matches("check")) {

@@ -1,5 +1,3 @@
-% si e' tenuto tutti
-%ccard("SPADES",2). card("SPADES",6). card("HEARTS",4). card("DIAMONDS",1). card("DIAMONDS",5).
-
-% quasi colore
-card("CLUBS",2). card("DIAMONDS",12). card("DIAMONDS",9). card("DIAMONDS",3). card("DIAMONDS",5).
+% aggiungere scale in semiScore.dlv
+% profiling
+% aggiustare choiceRaise.dlv con semiScore
