@@ -49,14 +49,18 @@ public class LogicGame {
     }
 
     public void gameCycle(){
-
+        int sum=0;
+        for(Player p: players){
+            sum+=p.getMoney();
+        }
+        sum+=plate.cash;
         allFold();
 
-        if(!blind) {
-            for (Player p : players)
-                p.setMoney(p.getMoney() - 10);
-            blind=true;
-        }
+        //if(!blind) {
+        //    for (Player p : players)
+        //        p.setMoney(p.getMoney() - 10);
+        //    blind=true;
+        //}
         if(!game.isRoundFinished()){
 
             Player player = players.get(playerShift);
@@ -136,12 +140,12 @@ public class LogicGame {
         }
 
         // -----------------------------------------------
-//
-//        Human human = new Human("SONY", 4000);
-//        human.setOnActionListerner  (new PlayerListener());
-//        human.setOnHumanListener    (new HumanListener(human));
-//
-//        players.add(human);
+        //
+        // Human human = new Human("SONY", 4000);
+        // human.setOnActionListerner  (new PlayerListener());
+        // human.setOnHumanListener    (new HumanListener(human));
+        //
+        //         players.add(human);
     }
 
     public void setAllCardForAllPlayer(){
@@ -263,8 +267,8 @@ public class LogicGame {
         @Override
         public void raisePerform(int money) {
             setPlayer();
-            plate.setCurrentValue(plate.getCurrentValue() + money);
             plate.increase(money+plate.getCurrentValue());
+            plate.setCurrentValue(plate.getCurrentValue() + money);
             if(listener != null)
                 listener.raise(player, money);
             increaseRound();

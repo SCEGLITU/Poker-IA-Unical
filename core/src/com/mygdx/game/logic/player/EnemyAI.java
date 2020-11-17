@@ -208,7 +208,7 @@ public class EnemyAI extends Player {
         private void addFactsMoney(int currentValue) {
 
             int plate = aiListener.getSumPlate();
-
+            System.out.println("money:"+getMoney()+" plate"+plate+" currentValue"+currentValue);
             facts.addProgram(String.format("myWallet(%d).", getMoney()));
             facts.addProgram(String.format("plate(%d).", plate));
             facts.addProgram(String.format("currentValue(%d).", currentValue));
