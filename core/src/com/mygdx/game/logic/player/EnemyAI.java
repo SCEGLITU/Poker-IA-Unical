@@ -21,12 +21,15 @@ import java.util.regex.Pattern;
 
 public class EnemyAI extends Player {
 
+    public static final int BLUFF_BOUND = 15;
     private DLVManager dlvManager = new DLVManager();
     private OnIntelligenceListener aiListener;
 
     private int round = 0;
     private boolean isBluff = false;
     protected int numberGame = 0;
+    protected int myIndex = 0;
+    protected int myPoint;
 
     private List<PlayerInfo> players;
 
@@ -66,6 +69,8 @@ public class EnemyAI extends Player {
             for(int i = 0; i < aiListener.getSizePlayers(); i++) {
                 players.add(new PlayerInfo());
             }
+
+            myIndex = aiListener.getMyIndex();
         }
     }
 
@@ -91,6 +96,7 @@ public class EnemyAI extends Player {
             players.get(i).actuallyMoneyBetRound =
                     aiListener.getMoneyBetOnRound(i);
         }
+        myPoint = aiListener.getMyPoint();
     }
 
     @Override
@@ -175,8 +181,6 @@ public class EnemyAI extends Player {
         private Handler initHandlerWithEncoding(int typeRound) {
             Handler handler = new DesktopHandler(new DLV2DesktopService(pathDlv));
 
-            // handler.addProgram(domain);
-
             switch (typeRound){
                 case BLUFF:
                     handler.addProgram(bluff);
@@ -231,20 +235,26 @@ public class EnemyAI extends Player {
                     *(playerInfo.moneyWin == 0?0:
                             playerInfo.pointsWin/playerInfo.moneyWin
             );
-            
+            facts.addProgram("%PLAYER " + index + "\n");
             facts.addProgram(String.format("avgMoneyBet     (%d, %d).", index, (int)playerInfo.avgMoneyBet));
             facts.addProgram(String.format("gameWin         (%d, %d).", index, playerInfo.gameWin));
             facts.addProgram(String.format("pointsWin       (%d, %d).", index, playerInfo.pointsWin));
             facts.addProgram(String.format("moneyBet        (%d, %d).", index, playerInfo.moneyBet));
             facts.addProgram(String.format("moneyWin        (%d, %d).", index, playerInfo.moneyWin));
             facts.addProgram(String.format("actuallyMoneyBet(%d, %d).", index, playerInfo.actuallyMoneyBet));
-            facts.addProgram(String.format("actuallyMoneyBetRound(%d, %d)."
-                    , index, playerInfo.actuallyMoneyBetRound));
+            facts.addProgram(String.format("actuallyMoneyBetRound(%d, %d).",
+                    index, playerInfo.actuallyMoneyBetRound));
+
 
             facts.addProgram(String.format("moneyBluff      (%d, %d).", index, moneyBluff));
             if(playerInfo.moneyWin != 0)
                 facts.addProgram(String.format("estimatedPoints (%d, %d).", index, estimatedPoints));
             facts.addProgram(String.format("game      (%d).", numberGame));
+
+            facts.addProgram(String.format("me(%d).", myIndex));
+            facts.addProgram(String.format("myPoint(%d).", myPoint));
+
+            facts.addProgram("\n");
         }
 
         private AnswerSets getOutput(Handler handler) throws Exception {
@@ -265,7 +275,7 @@ public class EnemyAI extends Player {
 
         public void doAnAIChoiceRoundOne(int currentPlayerValue, int currentValue){
             Random r = new Random(System.currentTimeMillis() + randomSeed);
-            if(r.nextInt(30) == 0 || isBluff) {
+            if(r.nextInt(BLUFF_BOUND) == 0 || isBluff) {
                 isBluff=true;
                 doAnAIChoise(currentPlayerValue, currentValue, BLUFF);
             }else
@@ -396,6 +406,8 @@ public class EnemyAI extends Player {
     public interface OnIntelligenceListener {
         int getSumPlate();
         int getSizePlayers();
+        int getMyIndex();
+        int getMyPoint();
 
         boolean isFold(int index);
         int getMoneyBet(int index);

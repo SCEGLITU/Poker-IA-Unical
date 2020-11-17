@@ -7,21 +7,14 @@
     :- not #count{X: scelta(X)}=1.
 
     % non puoi scegliere fold se hai gia' pagato il banco
-    :- scelta(fold), currentValue(CC), currentChecked(X), CC = X.
+    current(C):- currentValue(Z), currentChecked(CC), C = Z-CC.
+    :- scelta(fold), current(0).
 
-    % se il valore corrente del piatto e' nullo non si puo' foldare?
-	:- notscelta(check), currentValue(0).
+    % non posso fare un raise negativo
+    :- raise(X), X<0.
 
-	% non posso fare un check con non sufficienti soldi
-	:- check, myWallet(X), currentValue(Z), X<Z.
-
-	% non posso fare un raise più basso del (currentValue - currentchecked)
-	:- raise(X), X<0.
-
-	% defence --- if you can't pay the dealer, you must do fold
-	:- scelta(raise), myWallet(X), currentValue(Z), currentChecked(CC), raiseSum(RS), X < Z-CC-RS.
-	:- notscelta( fold), myWallet(X), currentValue(Z), currentChecked(CC), X < Z-CC.
-	scelta(fold) :- myWallet(X), X<0.
+    % defence --- se non puoi pagare il banco fai fold
+    :- notscelta(fold), current(C), myWallet(W), W<C.
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 %
 

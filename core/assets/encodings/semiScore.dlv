@@ -1,7 +1,4 @@
-% straight :- card(_, 10), card(_, 11), card(_, 12), card(_, 13), card(_,  1).
-
-
-semiStraight:- semiStraight(_,_).
+semiStraight:- semiStraight(_,_), not highestCoupleCard.
 
 semiStraight(S,N):-
 				card(S, N),
@@ -86,6 +83,72 @@ semiStraight(S,N+4):-
 				card(_, N + 1),
 				card(_, N + 2),
 				card(S, N + 4), not straight.
+%------------------------------------------
+
+% straight :- card(_, 10), card(_, 11), card(_, 12), card(_, 13), card(_,  1).
+%                      N          N+1          N+2          N+3          N+4
+semiStraight(S,10):-
+				card(S, 10),
+				card(_, 12),
+				card(_, 13),
+				card(_, 1), not straight.
+semiStraight(S,12):-
+				card(_, 10),
+				card(S, 12),
+				card(_, 13),
+				card(_, 1), not straight.
+semiStraight(S,13):-
+				card(_, 10),
+				card(_, 12),
+				card(S, 13),
+				card(_, 1), not straight.
+semiStraight(S,14):-
+				card(_, 10),
+				card(_, 12),
+				card(_, 13),
+				card(S, 1), not straight.
+%------------------------------------------
+semiStraight(S,10):-
+				card(S, 10),
+				card(_, 11),
+				card(_, 13),
+				card(_, 1), not straight.
+semiStraight(S,11):-
+				card(_, 10),
+				card(S, 11),
+				card(_, 13),
+				card(_, 1), not straight.
+semiStraight(S,13):-
+				card(_, 10),
+				card(_, 11),
+				card(S, 13),
+				card(_, 1), not straight.
+semiStraight(S,1):-
+				card(_, 10),
+				card(_, 11),
+				card(_, 13),
+				card(S, 1), not straight.
+%------------------------------------------
+semiStraight(S,10):-
+				card(S, 10),
+				card(_, 11),
+				card(_, 12),
+				card(_, 1), not straight.
+semiStraight(S,11):-
+				card(_, 10),
+				card(S, 11),
+				card(_, 12),
+				card(_, 1), not straight.
+semiStraight(S,12):-
+				card(_, 10),
+				card(_, 11),
+				card(S, 12),
+				card(_, 1), not straight.
+semiStraight(S,14):-
+				card(_, 10),
+				card(_, 11),
+				card(_, 12),
+				card(S, 1), not straight.
 %------------------------------------------
 
 % semiColorOne

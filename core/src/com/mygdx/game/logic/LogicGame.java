@@ -91,6 +91,8 @@ public class LogicGame {
 
         for(int i=0; i<4; i++){
             EnemyAI enemyAI = new EnemyAI("RIGHT_PLAYER", 4000);
+            players.add(enemyAI);
+            final int finalI = players.size() - 1;
             enemyAI.setOnIntelligenceListener(new EnemyAI.OnIntelligenceListener() {
                 @Override
                 public int getSumPlate() {
@@ -99,7 +101,15 @@ public class LogicGame {
 
                 @Override
                 public int getSizePlayers() {
-                    return players.size();
+                    return 4;
+                }
+
+                public int getMyIndex(){
+                    return finalI;
+                }
+
+                public int getMyPoint(){
+                    return evaluator.getPoint(players.get(finalI));
                 }
 
 
@@ -131,7 +141,7 @@ public class LogicGame {
                 }
             });
 
-            players.add(enemyAI);
+
         }
 
         for(int i=0; i<4; i++){

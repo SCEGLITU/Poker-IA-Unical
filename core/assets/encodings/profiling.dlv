@@ -10,10 +10,39 @@
     % estimatedPoints       (P,  E)  E is the sum estimated of points that P may has in proportion
     %                                    of actuallyMoneyBet
     % game                  (N)      N is the number of the played game
+    % me                    (ME)     ME is the index of the player whom calls the program
+    % myPoint               (PO)
+% ------------------------------------------------------------------------------------------
 
 % dominio
-    evaluable :- game(N), N>3.
+evaluable(P) :- game(N), N>3, gameWin(P,GW), GW>2, me(ME), ME!=P.
 
-bleffatore(P) :- notscelta(check), moneyBluff(P, B), actuallyMoneyBetRound(P, C), C > B, evaluable.
+% -------------------------------------------------------------------------------------------
 
-:~ scelta(fold), moneyBluff(P, B), actuallyMoneyBetRound(P, C), C > B, evaluable. [4@1, fold]
+% bluff
+bluffatore(P) :- moneyBluff(P, B), actuallyMoneyBetRound(P, C), C > B, evaluable(P).
+:~ scelta(fold), bleffatore(P). [200@1, fold]
+check    :- scelta(raise), not raise, not fold, bluffatore(_).
+
+% -------------------------------------------------------------------------------------------
+
+% stima dei punti
+% se i miei punti molto piu' bassi di quelli stimati di un giocatore
+:~ notscelta(fold), myPoint(PO), estimatedPoints(P, POE),
+            evaluable(P), not bleffatore(P), PO + 180 < POE. [1 @ 1, fold]
+
+% se i miei punti piu' bassi di quelli stimati di un giocatore
+:~ notscelta(fold), myPoint(PO), estimatedPoints(P, POE),
+            evaluable(P), not bleffatore(P), PO + 80 < POE. [1 @ 1, fold]
+
+% se i punti stimati di un giocatore sono piu' bassi dei miei
+:~ notscelta(check), myPoint(PO), estimatedPoints(P, POE),
+            evaluable(P), not bleffatore(P), POE + 80 < PO. [1 @ 1, check]
+:~ notscelta(raise), myPoint(PO), estimatedPoints(P, POE),
+            evaluable(P), not bleffatore(P), POE + 80 < PO. [1 @ 1, raise]
+
+% -------------------------------------------------------------------------------------------
+% non bravissimo... f o r s e
+% se un giocatore vince solo il una volta su 10
+badPlayer(P) :- evaluable(P), game(N), N>10, gameWin(P, GW), GW<=N*10/100, me(ME), ME!=P.
+:~ badPlayer(P), scelta(fold). [1 @ 1, fold]

@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.graphicsGDX.card.Deck;
 import com.mygdx.game.graphicsGDX.player.PlayerGDXPrinter;
@@ -26,6 +25,8 @@ import static com.mygdx.game.graphicsGDX.player.human.KeyboardHuman.CHECK;
 
 public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, PlayerGDXPrinter {
 
+    public static final double FPS = 15;
+    public static final double FPS_WRITE = 10;
     private Cursor cursor;
 
     private FinishWritten finishWritten = new FinishWritten();
@@ -38,7 +39,7 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
     private boolean printIn = false;
     private boolean printFinish = false;
 
-    private double fps = 10;
+    private double fps = FPS;
     private Plate plate;
 
     public PrinterGDX(Batch batch, ArrayList<Player> plys, Plate plate)
@@ -149,7 +150,7 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
     {
         printNormal();
         if(printIn){
-            fps = 2;
+            fps = FPS_WRITE;
         }
 
         if(printFinish){
@@ -169,17 +170,17 @@ public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, Playe
         }
 
         if(printIn) {
-            fps = 2;
+            fps = FPS_WRITE;
             printIn = false;
         }
         else
-            fps = 15;
+            fps = FPS;
 
         if(printFinish){
             printFinish = false;
         }
         else
-            fps = 15;
+            fps = FPS;
     }
 
     public void printNotify(String text, PlayerGraphic player) {

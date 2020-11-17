@@ -29,7 +29,7 @@ public class PlayerInfo{
     /**
      * soldi sul piatto nel game
      */
-    public int actuallyMoneyBet;
+    public int actuallyMoneyBet = 0;
 
     /**
      * soldi sul piatto nel round corrente

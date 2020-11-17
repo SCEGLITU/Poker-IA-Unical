@@ -32,37 +32,32 @@
     :- not #count{X: scelta(X)}=1.
 
     % non puoi scegliere fold se hai gia' pagato il banco
-    :- scelta(fold), currentValue(CC), currentChecked(X), CC = X.
+    current(C):- currentValue(Z), currentChecked(CC), C = Z-CC.
+    :- scelta(fold), current(0).
 
-    % se il valore corrente del piatto e' nullo non si puo' foldare?
-	:- notscelta(check), currentValue(0).
-
-	% non posso fare un check con non sufficienti soldi
-	:- check, myWallet(X), currentValue(Z), X<Z.
-
-	% non posso fare un raise più basso del (currentValue - currentchecked)
+	% non posso fare un raise negativo
 	:- raise(X), X<0.
 
-	% defence --- if you can't pay the dealer, you must do fold
-	:- notscelta(fold), myWallet(X), currentValue(Z), currentChecked(X), X < Z-X.
+	% defence --- se non puoi pagare il banco fai fold
+    :- notscelta(fold), current(C), myWallet(W), W<C.
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% WALLET 
+% WALLET
+
 	% WALLET_BASE
-	scelta(check):- currentValue(0).
-	:~ notscelta( fold), currentValue(C), myWallet(W), W = C, C!=0.		         [ 6 @ 1, fold]
-	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +   20.			     [ 5 @ 1, fold] 
-	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +   50, W >= C +   20.  [ 2 @ 1, fold]
-	:~ notscelta(check), currentValue(C), myWallet(W), W < C +   50, W >= C +   20.  [ 1 @ 1,check]
+	:~ notscelta( fold), current(C), myWallet(W), W = C, C!=0.		         [ 6 @ 1, fold]
+	:~ notscelta( fold), current(C), myWallet(W), W < C +   20.			     [ 5 @ 1, fold]
+	:~ notscelta( fold), current(C), myWallet(W), W < C +   50, W >= C +   20.  [ 2 @ 1, fold]
+	:~ notscelta(check), current(C), myWallet(W), W < C +   50, W >= C +   20.  [ 1 @ 1,check]
 	% WALLET_MEDIO
-	:~ notscelta( fold), currentValue(C), myWallet(W), W < C +  150, W >= C +   50.  [ 1 @ 1,  fold]
-	:~ notscelta(check), currentValue(C), myWallet(W), W < C +  150, W >= C +   50.  [ 1 @ 1, check]
-	:~ notscelta(check), currentValue(C), myWallet(W), W < C +  300, W >= C +  150.  [ 1 @ 1, check]
-	:~ notscelta(raise), currentValue(C), myWallet(W), W < C +  500, W >= C +  300.  [ 1 @ 1, raise]
+	:~ notscelta( fold), current(C), myWallet(W), W < C +  150, W >= C +   50.  [ 1 @ 1,  fold]
+	:~ notscelta(check), current(C), myWallet(W), W < C +  150, W >= C +   50.  [ 1 @ 1, check]
+	:~ notscelta(check), current(C), myWallet(W), W < C +  300, W >= C +  150.  [ 1 @ 1, check]
+	:~ notscelta(raise), current(C), myWallet(W), W < C +  500, W >= C +  300.  [ 1 @ 1, raise]
 	% WALLET_ALTO
-	:~ notscelta(raise), currentValue(C), myWallet(W), W < C + 1000, W >= C +  500.   [ 1 @ 1,raise]
-	:~ notscelta(raise), currentValue(C), myWallet(W), W < C + 2000, W >= C + 1000.   [ 1 @ 1,raise]
-	:~ notscelta(raise), currentValue(C), myWallet(W), 				W >= C +  2000.   [ 1 @ 1,raise]
+	:~ notscelta(raise), current(C), myWallet(W), W < C + 1000, W >= C +  500.   [ 1 @ 1,raise]
+	:~ notscelta(raise), current(C), myWallet(W), W < C + 2000, W >= C + 1000.   [ 1 @ 1,raise]
+	:~ notscelta(raise), current(C), myWallet(W), 				W >= C +  2000.   [ 1 @ 1,raise]
 
 % HIGHEST CARD
 % se non ho una particolare combinazione di carte
@@ -320,7 +315,6 @@ check  :- scelta(raise), currentValue(CC), myWallet(W), minVal(X, MIN),
 				MIN - CC = 0.
 check    :- scelta(raise), currentChecked(CC), minVal(X, MIN), X = CC.
 check    :- scelta(raise),   currentValue(CC), minVal(X, MIN), X = CC.
-
 
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 
