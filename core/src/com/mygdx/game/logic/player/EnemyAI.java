@@ -83,6 +83,9 @@ public class EnemyAI extends Player {
 
         countAboutShift();
 
+        Random r = new Random(System.currentTimeMillis() + randomSeed);
+        if(r.nextInt(BLUFF_BOUND) == 0)
+            isBluff=true;
         if(round == 0)
             dlvManager.doAnAIChoiceRoundOne(currentPlayerValue, currentValue);
         else
@@ -274,9 +277,7 @@ public class EnemyAI extends Player {
         }
 
         public void doAnAIChoiceRoundOne(int currentPlayerValue, int currentValue){
-            Random r = new Random(System.currentTimeMillis() + randomSeed);
-            if(r.nextInt(BLUFF_BOUND) == 0 || isBluff) {
-                isBluff=true;
+           if(isBluff) {
                 doAnAIChoise(currentPlayerValue, currentValue, BLUFF);
             }else
                 doAnAIChoise(currentPlayerValue, currentValue, CHOICERAISE);
@@ -326,12 +327,17 @@ public class EnemyAI extends Player {
                         raiseSum = Integer.parseInt(matcher.group(1));
                         if(isBluff){
                             Random r = new Random();
-                            int tmp = r.nextInt(1000);
+                            int tmp = r.nextInt(500);
                             raiseSum = raiseSum + (tmp - (tmp%10));
 
                             if(raiseSum + (currentValue - currentChecked) > money){
                                 raiseSum = money - raiseSum;
                             }
+                        }
+                        else{
+                            Random r = new Random();
+                            int tmp = r.nextInt(90);
+                            raiseSum = raiseSum + (tmp - (tmp%10));
                         }
                         if(raiseSum <= currentValue)
                             check(currentValue);
