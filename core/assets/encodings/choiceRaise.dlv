@@ -98,6 +98,66 @@
 	:~ notscelta(raise), highestCard, highestCard(N), N=1. 			[5 @ 1,  raise]
 	:~ notscelta(check), highestCard, highestCard(N), N>=10. 		[1 @ 1,  check]
 
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% SEMI-STRAIGHT
+
+	minVal(semiStraight, 150):-semiStraight.
+	maxVal(semiStraight, 600):-semiStraight.
+
+	% BANCO_BASSO 	 - promuovo raise
+	% se il piatto e' basso
+	:~ notscelta(raise), semiStraight, currentValue(Z), minVal(semiStraight, MIN), Z < MIN. [2 @ 1, raise]
+
+	% BANCO_MEDIO - promuovo check
+	% se il piatto non e' basso (intermedio)
+	:~ notscelta(check), semiStraight, currentValue(Z),
+	minVal(semiStraight, MIN), maxVal(semiStraight, MAX), Z >= MIN, Z <= MAX.		[3 @ 1, check]
+
+	% BANCO_ALTO 		 - promuovo fold
+	% se il piatto e' alto
+	:~ notscelta( fold), semiStraight, currentValue(Z), maxVal(semiStraight, MAX), Z >  MAX. [1 @ 1,  check]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta( check), semiStraight, highestCard(N), N>1, N<5. 	[1 @ 1,  check]
+
+	% CARTA_MEDIA
+	:~ notscelta(check), semiStraight, highestCard(N), N>=5, N<10. 	[2 @ 1, check]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), semiStraight, highestCard(N), N =  1. 	[3 @ 1,  raise]
+	:~ notscelta(raise), semiStraight, highestCard(N), N >=10. 	[3 @ 1,  raise]
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------
+% SEMI-COLOR
+    semiColor :- semiColorOne.
+    semiColor :- semiColorTwo.
+	minVal(semiColor, 150):-semiColor.
+	maxVal(semiColor, 600):-semiColor.
+
+	% BANCO_BASSO 	 - promuovo raise
+	% se il piatto e' basso
+	:~ notscelta(raise), semiColor, currentValue(Z), minVal(semiColor, MIN), Z < MIN. [2 @ 1, raise]
+
+	% BANCO_MEDIO - promuovo check
+	% se il piatto non e' basso (intermedio)
+	:~ notscelta(check), semiColor, currentValue(Z),
+	minVal(semiColor, MIN), maxVal(semiColor, MAX), Z >= MIN, Z <= MAX.		[3 @ 1, check]
+
+	% BANCO_ALTO 		 - promuovo fold
+	% se il piatto e' alto
+	:~ notscelta( fold), semiColor, currentValue(Z), maxVal(semiColor, MAX), Z >  MAX. [1 @ 1,  check]
+
+%---------------------
+	% CARTA_BASSA
+	:~ notscelta( check), semiColor, highestCard(N), N>1, N<5. 	[1 @ 1,  check]
+
+	% CARTA_MEDIA
+	:~ notscelta(check), semiColor, highestCard(N), N>=5, N<10. 	[2 @ 1, check]
+
+	% CARTA_ALTA
+	:~ notscelta(raise), semiColor, highestCard(N), N =  1. 	[3 @ 1,  raise]
+	:~ notscelta(raise), semiColor, highestCard(N), N >=10. 	[3 @ 1,  raise]
 
 %---------------------------------------------------------------------------------------------------------------------------------------------------------
 % COUPLE
