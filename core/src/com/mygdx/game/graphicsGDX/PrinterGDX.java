@@ -25,8 +25,8 @@ import static com.mygdx.game.graphicsGDX.player.human.KeyboardHuman.CHECK;
 
 public class PrinterGDX implements Printer, ManagerSpriteGDX, PrinterText, PlayerGDXPrinter {
 
-    public static final double FPS = 5;
-    public static final double FPS_WRITE = 5;
+    public static final double FPS = 10;
+    public static final double FPS_WRITE = 10;
     private Cursor cursor;
 
     private FinishWritten finishWritten = new FinishWritten();

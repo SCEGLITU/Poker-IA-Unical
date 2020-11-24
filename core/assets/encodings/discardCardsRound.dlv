@@ -14,29 +14,31 @@ keep(S, N)|discard(S, N):- card(S,N).
 :- discard(_,_), colorStraight.
 :- discard(_,_), color.
 :- discard(_,_), royalStraight.
+:- discard(_,N),  couple(N).
+:- discard(_,N),  doubleCouple(N,N2).
+:- discard(_,N2), doubleCouple(N,N2).
+:- discard(_,N),  tris(N).
 
-:~ discard(_,N),  couple(N).			[20 @ 1, N]
-:~ discard(_,N),  doubleCouple(N,N2).	[20 @ 1, N]
-:~ discard(_,N2), doubleCouple(N,N2).	[20 @ 1, N]
-:~ discard(_,N),  tris(N).				[20 @ 1, N]
-
-:~ couple(N), keep(_,N1), N1!=N, not doubleCouple. [8 @ 1, N]
-:~ keep(_,N1), doubleCouple(_,N), N1!=N. [15 @ 1]
-:~ keep(_,N1), doubleCouple(N,_), N1!=N. [15 @ 1]
+:~ couple(N), keep(_,N1), N1!=N, not doubleCouple. [20 @ 1, N]
+:~ keep(_,N1), doubleCouple(_,N), doubleCouple(N2,_),  N1!=N, N2!=N. [25 @ 1]
 :~ keep(_,N1),  		 tris(N), N1!=N. [35 @ 1]
 :~ keep(_,N1),  		poker(N), N1!=N. [45 @ 1]
 
+:~ discard(_,N), highestCard(N), N>=10, not highestCoupleCard. 			[5 @ 1, N]
+:~ discard(_,N), highestCard(N),   N=1, not highestCoupleCard.			[5 @ 1, N]
 
-
-:~ discard(_,N), highestCard(N), N>=10.	[ 5 @ 1, N]
-:~ discard(_,N), highestCard(N), N=1.	[ 5 @ 1, N]
-
-:~ discard(_,N), highestCard(N), N>=10, not highestCoupleCard. 			[20 @ 1, N]
-:~ discard(_,N), highestCard(N),   N=1, not highestCoupleCard.			[20 @ 1, N]
 :~ card(S,N), keep(S,N), not highestCoupleCard, highestCard(N1), N!=N1, not semiStraight.	[  2 @ 1, N]
 
 :~ not semiStraight(S,N), keep   (S,N), semiStraight. [50@ 1]
-:~     semiStraight(S,N), discard(S,N).				  [20@ 1, N]
+:~     semiStraight(S,N), discard(S,N).				  [30@ 1, N]
 
-:~ semiColorOne(S), discard(S,_).			   [10 @ 1]
-:~ semiColorTwo(S), discard(S,_).			   [5 @ 1]
+discards:-discard(_,_).
+
+:~     semiStraight, not discards.				  [300@ 1, N]
+:~     doubleCouple, not discards.              [300@1, N]
+:~     tris, not discards.              [300@1, N]
+:~     poker, not discards.              [300@1, N]
+
+:~ semiColorOne(S), discard(S,_).			   [25 @ 1]
+:~ semiColorTwo(S), discard(S,_).			   [20 @ 1]
+:~ semiColorTwo(S), keep(S1,_), S!=S1.         [ 8 @ 1]

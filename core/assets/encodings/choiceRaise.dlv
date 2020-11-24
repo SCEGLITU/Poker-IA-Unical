@@ -197,7 +197,7 @@
 	doubleCouple:- doubleCouple(_,_).
 
 	minVal(doubleCouple, 250):-doubleCouple.
-	maxVal(doubleCouple, 700):-doubleCouple.
+	maxVal(doubleCouple, 1200):-doubleCouple.
 
 	% BANCO_BASSO 	 - promuovo raise
 	% se il piatto e' basso
